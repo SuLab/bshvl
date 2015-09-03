@@ -489,7 +489,6 @@ def extract(doc):
                     word1_tmp = re.sub("_", "", w1.word)
                     word2_tmp = re.sub("_", "", w2.word)
                     if w1.word == w2.word or word1_tmp == word2_tmp:
-                        mention = None
                         continue
 
                     ## Don't include same genes as mentions ##
@@ -499,7 +498,6 @@ def extract(doc):
 
                         for geneid1 in geneids1:
                             if geneid1 in geneids2:
-                                mention = None
                                 continue
 
                     ############## FEATURE EXTRACTION ####################################
@@ -549,7 +547,6 @@ def extract(doc):
 
                     ## Do not include as candidates ##
                     if "while" in ws or "whereas" in ws or "but" in ws or "where" in ws or "however" in ws:
-                        mention = None
                         continue
 
                     ##### FEATURE: HIGH QUALITY PREP INTERACTION PATTERNS #####
