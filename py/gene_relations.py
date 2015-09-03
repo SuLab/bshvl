@@ -228,7 +228,7 @@ def load_dict():
 		if w2 not in dict_interact:
 			dict_interact[w2] = {}
 
-	dict_interact[w2][w1] = 1
+		dict_interact[w2][w1] = 1
 
 	for l in open(BASE_FOLDER + SUPERVSION_EXCLUDE_DICT):
 		ss = l.rstrip().split("\t")
