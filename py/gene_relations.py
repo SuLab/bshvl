@@ -24,8 +24,6 @@ dict_pmid_gene = {}
 dict_gene_pmid = {}
 dict_drug_names = {}
 dict_compound_bio_roles = set()
-dict_geneid2name = {}
-dict_geneid2official = {}
 dict_name2geneid = {}
 dict_snowball = {}
 dict_exclude_dist_sup = {}
@@ -154,22 +152,25 @@ def load_dict():
     for x in [x.strip() for x in open(BASE_FOLDER + INPUT_FILE_10K_SKIP).readlines()]:
         dict_gs_docids.add(x.rstrip().split(".pdf")[0].lower())
 
+
+    #load simple dictionaries
+    load_rel_dictionary(BASE_FOLDER + SNOWBALL_DICT, dict_interact)
+    load_rel_dictionary(BASE_FOLDER + SUPERVSION_EXCLUDE_DICT, dict_exclude_dist_sup)
+    load_simple_dictionary(BASE_FOLDER + "/dicts/words", True, dict_english)
+    load_simple_dictionary(BASE_FOLDER + "/dicts/smart_domain_list.txt", False, dict_domains, "\t")
+    load_simple_dictionary(BASE_FOLDER + "/dicts/med_acronyms_pruned.txt", False, dict_abbv, "\t")
+    load_simple_dictionary(BASE_FOLDER + "dicts/compounds_bio_roles.txt", True, dict_compound_bio_roles)
+
     #dictionary with all gene symbols, not pruned
     with open(BASE_FOLDER + GENE_DICT_ALL) as tsv:
         r = csv.reader(tsv, dialect=DICT_DIALECT)
         headers = r.next()
         for line in r:
-
-            if line[1] not in dict_geneid2name:
-                dict_geneid2name[line[1]] = {}
-
             if len(line[4]) > 2 and line[4] != "":
                 if line[4] not in dict_name2geneid:
                     dict_name2geneid[line[4]] = {}
 
-                dict_gene_symbols_all[line[4].rstrip()] = "symbol"#line[3]
-                dict_geneid2name[line[1]][line[4].rstrip()] = 1
-                dict_geneid2official[line[1]] = line[4].rstrip()
+                dict_gene_symbols_all[line[4].rstrip()] = "symbol"
                 dict_name2geneid[line[4].rstrip()][line[1]] = 1
             alt_names = line[6].rstrip()
             alt_names = re.sub("\"", "", alt_names)
@@ -181,7 +182,6 @@ def load_dict():
                         dict_name2geneid[alt] = {}
 
                     dict_gene_symbols_all[alt] = "alt name"
-                    dict_geneid2name[line[1]][alt] = 1
                     dict_name2geneid[alt][line[1]] = 1
 
     with open(BASE_FOLDER + GENE_DICT) as tsv:
@@ -190,16 +190,12 @@ def load_dict():
         for line in r:
 
             if len(line[0]) > 2 and line[0] != "" and not re.search("^\d+\.?\d+$",line[0]):
-                dict_gene_pruned[line[0]] = "symbol"#line[3]
+                dict_gene_pruned[line[0]] = "symbol"
             alt_names = line[1].rstrip()
-            #alt_names = re.sub("\"", "", alt_names)
-            #alt_names = re.sub(",$", "", alt_names)
             alt_names = alt_names.split(",")
             for alt in alt_names:
                 if len(alt) > 2 and not re.search("^\d+\.?\d+$",alt):
                     dict_gene_pruned[alt] = line[1]
-
-
 
     for l in open(BASE_FOLDER + NEG_INT_DICT):
         ss = l.rstrip().split('\t')
@@ -212,34 +208,6 @@ def load_dict():
             dict_no_interact[w1] = {}
 
         dict_no_interact[w1][w2] = 1
-
-    for l in open(BASE_FOLDER + SNOWBALL_DICT):
-        ss = l.rstrip().split('\t')
-        w1 = ss[0]
-        w2 = ss[1]
-
-        if w1 not in dict_interact:
-            dict_interact[w1] = {}
-
-        dict_interact[w1][w2] = 1
-
-        if w2 not in dict_interact:
-            dict_interact[w2] = {}
-
-        dict_interact[w2][w1] = 1
-
-    for l in open(BASE_FOLDER + SUPERVSION_EXCLUDE_DICT):
-        ss = l.rstrip().split("\t")
-        
-        if ss[0] not in dict_exclude_dist_sup:
-            dict_exclude_dist_sup[ss[0]] = {}
-
-        dict_exclude_dist_sup[ss[0]][ss[1]] = 1
-
-        if ss[1] not in dict_exclude_dist_sup:
-            dict_exclude_dist_sup[ss[1]] = {}
-
-        dict_exclude_dist_sup[ss[1]][ss[0]] = 1
 
     for l in open(BASE_FOLDER + PLOS2PMID_BIOGRID_DICT):
         ss = l.split("\t")
@@ -346,11 +314,6 @@ def load_dict():
                 dict_gene_pmid[gene] = {}
             dict_gene_pmid[gene][pmid] = 1
 
-    for l in open(BASE_FOLDER + "dicts/compounds_bio_roles.txt"):
-        for w in l.split(";"):
-            dict_compound_bio_roles.add(w.rstrip().lower())
-
-
     with open(BASE_FOLDER + DRUG_DICT) as tsv:
         r = csv.reader(tsv, dialect=DICT_DIALECT)
         headers = r.next()
@@ -360,17 +323,33 @@ def load_dict():
                     if line[1].lower != "nitric oxide":
                         dict_drug_names[line[1].lower()] = line[1]
 
-    for l in open(BASE_FOLDER + "/dicts/med_acronyms_pruned.txt"):
-        word = l.rstrip().split("\t")[0]
-        dict_abbv[word] = 1
 
-    for l in open(BASE_FOLDER + "/dicts/words"):
-        dict_english[l.rstrip().lower()] = 1
 
-    with open(BASE_FOLDER + "/dicts/smart_domain_list.txt") as f:
-        reader = csv.reader(f, delimiter='\t')
-        for row in reader:
-            dict_domains[row[0].rstrip()] = 1
+def load_simple_dictionary(FILEPATH, dictionary = {}, seperator = None, lower_flag = False):
+    for l in open(FILEPATH):
+        if seperator is None:
+            w = l.rstrip()
+            if lower_flag == True: w = w.lower()
+            dictionary[w] = 1
+        else:
+            w = l.split(seperator)[0].rstrip()
+            if lower_flag == True: w = w.lower()
+            dictionary[w] = 1
+
+def load_rel_dictionary(FILEPATH, dictionary = {}):
+    for l in open(FILEPATH):
+        ss = l.rstrip().split('\t')
+        w1 = ss[0]
+        w2 = ss[1]
+
+        if w1 not in dictionary:
+            dictionary[w1] = {}
+        if w2 not in dictionary:
+            dictionary[w2] = {}
+        
+        dictionary[w2][w1] = 1    
+        dictionary[w1][w2] = 1
+
 
 ######
 # Name: normalize
