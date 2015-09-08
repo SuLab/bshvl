@@ -30,7 +30,6 @@ dict_exclude_dist_sup = {}
 dict_english = {}
 dict_abbv = {}
 dict_domains = {}
-dict_y2h = {}
 dict_pmid2plos = {}
 dict_gs_docids = set()
 
@@ -203,10 +202,8 @@ def load_dict():
         w2 = ss[4]
 
         if w1 == "NULL" or w2 == "NULL" : continue
-
         if w1 not in dict_no_interact:
             dict_no_interact[w1] = {}
-
         dict_no_interact[w1][w2] = 1
 
     for l in open(BASE_FOLDER + PLOS2PMID_BIOGRID_DICT):
@@ -226,75 +223,47 @@ def load_dict():
                 if plos_pmid not in dict_pmid_gene:
                     dict_pmid_gene[plos_pmid] = {}
 
-        y2h = 0
-        if ss[6] == "Two-hybrid":
-            y2h = 1
-        elif ss[6] != "Co-crystal Structure" and ss[6] != "Reconstituted Complex" and ss[6] != "Co-purification":
+        if ss[6] != "Co-crystal Structure" and ss[6] != "Reconstituted Complex" and ss[6] != "Co-purification":
             continue
 
         skip_genes = ["p38", "PI3K"]
 
-        if y2h == 0:
-            g1 = ss[2]
-            g2 = ss[3]
-            if g1 not in skip_genes and g2 not in skip_genes:
-                if g1 not in dict_interact:
-                    dict_interact[g1] = {}
-                dict_interact[g1][g2] = 1
-                if g2 not in dict_interact:
-                    dict_interact[g2] = {}
-                dict_interact[g2][g1] = 1
+        g1 = ss[2]
+        g2 = ss[3]
+        if g1 not in skip_genes and g2 not in skip_genes:
+            if g1 not in dict_interact:
+                dict_interact[g1] = {}
+            dict_interact[g1][g2] = 1
+            if g2 not in dict_interact:
+                dict_interact[g2] = {}
+            dict_interact[g2][g1] = 1
 
-            #alias
-            alt_list_1 = ss[4].split("|")
-            alt_list_2 = ss[5].split("|")
+        #alias
+        alt_list_1 = ss[4].split("|")
+        alt_list_2 = ss[5].split("|")
 
-            for a1 in alt_list_1:
-                for a2 in alt_list_2:
+        for a1 in alt_list_1:
+            for a2 in alt_list_2:
 
-                    if a1 not in skip_genes and a2 not in skip_genes:
-                        if a1 not in dict_interact:
-                            dict_interact[a1] = {}
-                        if a2 not in dict_interact:
-                            dict_interact[a2] = {}
-                        dict_interact[a1][a2] = 1
-                        dict_interact[a2][a1] = 1
-                        
-                        if pmids.rstrip() in dict_pmid2plos:
-                            plos_pmid = dict_pmid2plos[pmids.rstrip()]
-                            if plos_pmid in dict_pmid_gene:
-                                dict_pmid_gene[plos_pmid][a1] = 1
-                                dict_pmid_gene[plos_pmid][a2] = 1
+                if a1 not in skip_genes and a2 not in skip_genes:
+                    if a1 not in dict_interact:
+                        dict_interact[a1] = {}
+                    if a2 not in dict_interact:
+                        dict_interact[a2] = {}
+                    dict_interact[a1][a2] = 1
+                    dict_interact[a2][a1] = 1
+                    
+                    if pmids.rstrip() in dict_pmid2plos:
+                        plos_pmid = dict_pmid2plos[pmids.rstrip()]
+                        if plos_pmid in dict_pmid_gene:
+                            dict_pmid_gene[plos_pmid][a1] = 1
+                            dict_pmid_gene[plos_pmid][a2] = 1
 
-            if pmids.rstrip() in dict_pmid2plos:
-                plos_pmid = dict_pmid2plos[pmids.rstrip()] 
-                if plos_pmid in dict_pmid_gene:
-                    dict_pmid_gene[plos_pmid][g1] = 1
-                    dict_pmid_gene[plos_pmid][g2] = 1
-        else:
-            g1 = ss[2]
-            g2 = ss[3]
-            if g1 not in dict_y2h:
-                dict_y2h[g1] = {}
-            dict_y2h[g1][g2] = 1
-            if g2 not in dict_y2h:
-                dict_y2h[g2] = {}
-            dict_y2h[g2][g1] = 1
-
-            #alias
-            alt_list_1 = ss[4].split("|")
-            alt_list_2 = ss[5].split("|")
-
-            for a1 in alt_list_1:
-                for a2 in alt_list_2:
-
-                    if a1 not in dict_y2h:
-                        dict_y2h[a1] = {}
-                    if a2 not in dict_y2h:
-                        dict_y2h[a2] = {}
-                    dict_y2h[a1][a2] = 1
-                    dict_y2h[a2][a1] = 1
-
+        if pmids.rstrip() in dict_pmid2plos:
+            plos_pmid = dict_pmid2plos[pmids.rstrip()] 
+            if plos_pmid in dict_pmid_gene:
+                dict_pmid_gene[plos_pmid][g1] = 1
+                dict_pmid_gene[plos_pmid][g2] = 1
 
     with open(BASE_FOLDER + TF_DICT, "r") as f:
         reader = csv.reader(f)
@@ -324,8 +293,16 @@ def load_dict():
                         dict_drug_names[line[1].lower()] = line[1]
 
 
+######
+# Name: load_simple_dictionary
+# Input: FILEPATH of the file, flag if text needs to be lowercase, dictionary to be laoded, 
+#    seperator for row 
+# Return: loaded dictionary
+#
+# Loads simple formatted dictionaries
+######
 
-def load_simple_dictionary(FILEPATH, dictionary = {}, seperator = None, lower_flag = False):
+def load_simple_dictionary(FILEPATH, lower_flag, dictionary = {}, seperator = None):
     for l in open(FILEPATH):
         if seperator is None:
             w = l.rstrip()
@@ -335,6 +312,14 @@ def load_simple_dictionary(FILEPATH, dictionary = {}, seperator = None, lower_fl
             w = l.split(seperator)[0].rstrip()
             if lower_flag == True: w = w.lower()
             dictionary[w] = 1
+
+######
+# Name: load_rel_dictionary
+# Input: FILEPATH of the file, dictionary to be loaded 
+# Return: loaded dictionary
+#
+# Loads simple formatted relation dictionaries
+######
 
 def load_rel_dictionary(FILEPATH, dictionary = {}):
     for l in open(FILEPATH):
@@ -683,98 +668,19 @@ def generate_features(doc, sent, w1, w2):
     ####################################
     ##### FEATURE: WINDOW FEATURES #####
     ####################################
-
-    bad_char = ["\'", "}", "{", "\"", "-", ",", "[", "]"] 
+    
     flag_family = 0
+    if maxindex < len(sent.words) - 1 and sent.words[maxindex+1].lemma in ["family", "superfamily"]: flag_family = 1
+    if sent.words[minindex+1].lemma in ["family", "superfamily"]: flag_family = 1
 
-    if minindex > 0:
-        if sent.words[minindex - 1].lemma not in bad_char and "," not in sent.words[minindex - 1].lemma:
-            if sent.words[minindex-1].lemma in dict_gene_pruned:
-                features.append('WINDOW_LEFT_M1_1_with[GENE]')
-            else:
-                features.append('WINDOW_LEFT_M1_1_with[%s]' % sent.words[minindex-1].lemma)
+    f1 = get_window_features(sent, minindex, "M1", len(ws))
+    f2 = get_window_features(sent, maxindex, "M2", len(ws))
 
-    if minindex > 1:
-        
-        if sent.words[minindex-2].word in dict_gene_pruned:
-            left_phrase = "GENE"+"-"+sent.words[minindex-1].lemma
-        else:
-            left_phrase = sent.words[minindex-2].lemma+"-"+sent.words[minindex-1].lemma
-        
-        if sent.words[minindex - 2].lemma not in bad_char and sent.words[minindex - 1].lemma not in bad_char and "," not in left_phrase:
-            features.append('WINDOW_LEFT_M1_PHRASE_with[%s]' % left_phrase)
-            
-        elif sent.words[minindex - 2].lemma not in bad_char and "," not in sent.words[minindex - 2].lemma:
-            if sent.words[minindex-2].word in dict_gene_pruned:
-                features.append('WINDOW_LEFT_M1_2_with[GENE]')
-            else:
-                features.append('WINDOW_LEFT_M1_2_with[%s]' % sent.words[minindex-2].lemma)
+    for window_feature in f1:
+        features.append(window_feature)
 
-    if maxindex < len(sent.words) - 1:
-        if sent.words[maxindex + 1].lemma not in bad_char and "," not in sent.words[maxindex + 1].lemma:
-            if sent.words[maxindex+1].word in dict_gene_pruned:
-                features.append('WINDOW_RIGHT_M2_1_with[GENE]')
-            else:
-                if sent.words[maxindex+1].lemma in ["family", "superfamily"]: flag_family = 1
-                features.append('WINDOW_RIGHT_M2_1_with[%s]' % sent.words[maxindex+1].lemma)
-
-    if maxindex < len(sent.words) - 2:
-        
-        if sent.words[maxindex + 2].word in dict_gene_pruned:
-            right_phrase = "GENE"+"-"+sent.words[maxindex+1].lemma
-        else:
-            right_phrase = sent.words[maxindex+2].lemma+"-"+sent.words[maxindex+1].lemma
-        
-        if sent.words[maxindex + 2].lemma not in bad_char and sent.words[maxindex + 1].lemma not in bad_char and "," not in right_phrase:
-            features.append('WINDOW_RIGHT_M2_PHRASE_with[%s]' % right_phrase)
-            
-        elif sent.words[maxindex + 2].lemma not in bad_char and "," not in sent.words[maxindex + 2].lemma:
-            if sent.words[maxindex + 2].word in dict_gene_pruned:
-                features.append('WINDOW_RIGHT_M2_2_with[GENE]')
-            else:
-                features.append('WINDOW_RIGHT_M2_2_with[%s]' % sent.words[maxindex+2].lemma)
-
-    if len(ws) > 4:
-        if sent.words[minindex + 1].lemma not in bad_char and "," not in sent.words[minindex + 1].lemma:
-            if sent.words[minindex + 1].word in dict_gene_pruned:
-                features.append('WINDOW_RIGHT_M1_1_with[GENE]')
-            else:
-                if sent.words[minindex+1].lemma in ["family", "superfamily"]: flag_family = 1
-                features.append('WINDOW_RIGHT_M1_1_with[%s]' % sent.words[minindex+1].lemma)
-
-        if sent.words[minindex+2].word in dict_gene_pruned:
-            m1_right_phrase = "GENE"+"-"+sent.words[minindex+1].lemma
-        else:
-            m1_right_phrase = sent.words[minindex+2].lemma+"-"+sent.words[minindex+1].lemma
-
-        if sent.words[minindex + 2].lemma not in bad_char and sent.words[minindex + 1].lemma not in bad_char and "," not in m1_right_phrase:
-            features.append('WINDOW_RIGHT_M1_PHRASE_with[%s]' % m1_right_phrase)
-            
-        elif sent.words[minindex + 2].lemma not in bad_char and "," not in sent.words[minindex + 2].lemma:
-            if sent.words[minindex+2].word in dict_gene_pruned:
-                features.append('WINDOW_RIGHT_M1_2_with[GENE]')
-            else:
-                features.append('WINDOW_RIGHT_M1_2_with[%s]' % sent.words[minindex+2].lemma)
-
-        if sent.words[maxindex - 1].lemma not in bad_char and "," not in sent.words[maxindex - 1].lemma:
-            if sent.words[maxindex - 1].word in dict_gene_pruned:
-                features.append('WINDOW_LEFT_M2_1_with[GENE]')
-            else:
-                features.append('WINDOW_LEFT_M2_1_with[%s]' % sent.words[maxindex-1].lemma)
-
-        if sent.words[maxindex-2].word in dict_gene_pruned:
-            m2_left_phrase = "GENE"+"-"+sent.words[maxindex-1].lemma
-        else:
-            m2_left_phrase = sent.words[maxindex-2].lemma+"-"+sent.words[maxindex-1].lemma
-
-        if sent.words[maxindex - 2].lemma not in bad_char and sent.words[maxindex - 1].lemma not in bad_char and "," not in m2_left_phrase: 
-            features.append('WINDOW_LEFT_M2_PHRASE_with[%s]' % m2_left_phrase)
-            
-        elif sent.words[maxindex - 2].lemma not in bad_char and "," not in sent.words[maxindex - 2].lemma:
-            if sent.words[maxindex-2].word in dict_gene_pruned:
-                features.append('WINDOW_LEFT_M2_2_with[GENE]')
-            else:
-                features.append('WINDOW_LEFT_M2_2_with[%s]' % sent.words[maxindex-2].lemma)
+    for window_feature in f2:
+        features.append(window_feature)
 
     ###########################
     ##### FEATURE: DOMAIN #####
@@ -863,6 +769,68 @@ def generate_features(doc, sent, w1, w2):
 
     return features
 
+######
+# Name: get_window_features
+# Input: sentence object, mention index, entity (M1, M2)
+#     lenth of word sequence between genes in sentence
+# Return: array of window features
+#
+# Generate window features for one gene
+######
+
+def get_window_feature(sent, index, entity, ws_len):
+
+    window_features = []
+
+    bad_char = ["\'", "}", "{", "\"", "-", ",", "[", "]"] 
+    if index > 0:
+        if entity == "M2" and ws_len <= 4: continue
+        if sent.words[minindex - 1].lemma not in bad_char and "," not in sent.words[minindex - 1].lemma:
+            if sent.words[minindex-1].lemma in self.dict_gene_pruned:
+                window_features.append('WINDOW_LEFT_' + entity + '_1_with[GENE]')
+            else:
+                window_features.append('WINDOW_LEFT_' + entity + '_1_with[%s]' % sent.words[minindex-1].lemma)
+
+    if index > 1:
+        if entity == "M2" and ws_len <= 4: continue
+        if sent.words[minindex-2].word in dict_gene_pruned:
+            left_phrase = "GENE"+"-"+sent.words[minindex-1].lemma
+        else:
+            left_phrase = sent.words[minindex-2].lemma+"-"+sent.words[minindex-1].lemma
+        if sent.words[index - 2].lemma not in bad_char and sent.words[index - 1].lemma not in bad_char and "," not in left_phrase:
+            window_features.append('WINDOW_LEFT_' + entity + '_PHRASE_with[%s]' % left_phrase)
+            
+        elif sent.words[index - 2].lemma not in bad_char and "," not in sent.words[index - 2].lemma:
+            if sent.words[index-2].lemma in self.dict_gene_pruned:
+                window_features.append('WINDOW_LEFT_' + entity + '_2_with[GENE]')
+            else:
+                window_features.append('WINDOW_LEFT_' + entity + '_2_with[%s]' % sent.words[index-2].lemma)
+
+    if index < len(sent.words) - 1:
+        if entity == "M1" and ws_len <= 4: continue
+        if sent.words[index + 1].lemma not in bad_char and "," not in sent.words[index + 1].lemma:
+            if sent.words[index+1].lemma in self.dict_gene_pruned:
+                window_features.append('WINDOW_RIGHT_' + entity + '_1_with[GENE]')
+            else:
+                window_features.append('WINDOW_RIGHT_' + entity + '_1_with[%s]' % sent.words[+1].lemma)
+
+    if index < len(sent.words) - 2:
+        if entity == "M1" and ws_len <= 4: continue
+        if sent.words[maxindex + 2].word in dict_gene_pruned:
+            right_phrase = "GENE"+"-"+sent.words[maxindex+1].lemma
+        else:
+            right_phrase = sent.words[maxindex+2].lemma+"-"+sent.words[maxindex+1].lemma
+        
+        if sent.words[index + 2].lemma not in bad_char and sent.words[index + 1].lemma not in bad_char and "," not in right_phrase:
+            window_features.append('WINDOW_RIGHT_' + entity + '_PHRASE_with[%s]' % right_phrase)
+            
+        elif sent.words[index + 2].lemma not in bad_char and "," not in sent.words[index + 2].lemma:
+            if sent.words[index + 2].lemma in self.dict_gene_pruned:
+                window_features.append('WINDOW_RIGHT_' + entity +'_2_with[GENE]')
+            else:
+                window_features.append('WINDOW_RIGHT_' + entity + '_2_with[%s]' % sent.words[index+2].lemma)
+
+    return window_features
 
 ######
 # Name: supervise
