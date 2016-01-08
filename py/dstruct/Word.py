@@ -1,12 +1,12 @@
-# Author: Emily K Mallory and Ce Zhang
-# Date: 08/24/15
-# Contact: emily.mallory@stanford.edu
-#
-# Word class
-# 
-############################################
-
 #! /usr/bin/env python
+
+"""
+Author: Emily K Mallory and Ce Zhang
+Date: 08/24/15
+Contact: emily.mallory@stanford.edu
+
+Word class
+"""
 
 class Word(object):
   

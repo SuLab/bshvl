@@ -1,13 +1,12 @@
-############################################
-# Author: Emily K Mallory and Ce Zhang
-# Date: 08/24/15
-# Contact: emily.mallory@stanford.edu
-#
-# Document class
-# 
-############################################
-
 #! /usr/bin/env python
+
+"""
+Author: Emily K Mallory and Ce Zhang
+Date: 08/24/15
+Contact: emily.mallory@stanford.edu
+
+Document class
+"""
 
 import math
 import copy

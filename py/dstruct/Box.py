@@ -1,11 +1,10 @@
-############################################
-# Author: Emily K Mallory and Ce Zhang
-# Date: 08/24/15
-# Contact: emily.mallory@stanford.edu
-# 
-############################################
-
 #! /usr/bin/env python
+
+"""
+Author: Emily K Mallory and Ce Zhang
+Date: 08/24/15
+Contact: emily.mallory@stanford.edu
+"""
 
 import re
 

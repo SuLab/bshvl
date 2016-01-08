@@ -1,13 +1,12 @@
-############################################
-# Author: Emily K Mallory and Ce Zhang
-# Date: 08/24/15
-# Contact: emily.mallory@stanford.edu
-#
-# Loads sentences into database. 
-# 
-############################################
-
 #! /usr/bin/env python
+
+"""
+Author: Emily K Mallory and Ce Zhang
+Date: 08/24/15
+Contact: emily.mallory@stanford.edu
+
+Loads sentences into database. 
+"""
 
 from helper.easierlife import *
 from extractor.EntityExtractor_Drug import *

@@ -1,13 +1,12 @@
-############################################
-# Author: Emily K Mallory and Ce Zhang
-# Date: 08/24/15
-# Contact: emily.mallory@stanford.edu
-#
-# Loads docids into database. 
-# 
-############################################
-
 #! /usr/bin/env python
+
+"""
+Author: Emily K Mallory and Ce Zhang
+Date: 08/24/15
+Contact: emily.mallory@stanford.edu
+
+Loads docids into database. 
+"""
 
 from helper.easierlife import *
 

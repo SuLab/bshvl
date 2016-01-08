@@ -1,14 +1,15 @@
-############################################
-# Author: Emily K Mallory and Ce Zhang
-# Date: 08/24/15
-# Contact: emily.mallory@stanford.edu
-#
-# Extractor for gene-gene relations, compiled
-#   in a single script
-# 
-############################################
-
 #!/usr/bin/python
+
+"""
+Author: Emily K Mallory and Ce Zhang
+Date: 08/24/15
+Contact: emily.mallory@stanford.edu
+
+Extractor for gene-gene relations, compiled
+in a single script
+ 
+"""
+
 import sys
 from helper.easierlife import *
 import csv
@@ -36,15 +37,16 @@ dict_y2h = {}
 dict_pmid2plos = {}
 dict_gs_docids = set()
 
-######
-# Name: dep_path
-# Input: dependency tree, sentence, lemma, and start and end word postions
-# Return: Dependency path between two words
-#
-# Simplified version of Sentence class dependency path code
-######
 
 def dep_path(deptree, sent, lemma, start1, end1, start2, end2):
+    """
+    Name: dep_path
+    Input: dependency tree, sentence, lemma, and start and end word postions
+    Return: Dependency path between two words
+
+    Simplified version of Sentence class dependency path code
+    """
+
     if len(deptree) > 0:
         path1 = []
         end = end1 - 1
@@ -122,15 +124,16 @@ def dep_path(deptree, sent, lemma, start1, end1, start2, end2):
         else:
             return None
 
-######
-# Name: load_dict
-# Input: None
-# Return: None
-#
-# Store all relevant dictionaries for the gene-gene extractor
-######
 
 def load_dict():
+
+    """
+    Name: load_dict
+    Input: None
+    Return: None
+
+    Store all relevant dictionaries for the gene-gene extractor
+    """
 
     csv.field_size_limit(sys.maxsize)
     GENE_DICT = "/dicts/genes_pruned.tsv"
@@ -372,26 +375,27 @@ def load_dict():
         for row in reader:
             dict_domains[row[0].rstrip()] = 1
 
-######
-# Name: normalize
-# Input: word
-# Return: normalized word
-#
-# Normalization for word characters
-######
 
 def normalize(word):
+    """
+    Name: normalize
+    Input: word
+    Return: normalized word
+
+    Normalization for word characters
+    """ 
     return word.encode("ascii", "ignore").replace("'", '_').replace('{', '-_-').replace('}','-__-').replace('"', '-___-').replace(', ,', ',__')
 
-######
-# Name: normalize_utf
-# Input: text word
-# Return: normalized word
-#
-# Replaces common UTF codes with appropriate characters
-######
 
 def normalize_utf(word):
+    """
+    Name: normalize_utf
+    Input: text word
+    Return: normalized word
+
+    Replaces common UTF codes with appropriate characters
+    """
+
     word = re.sub('\\xe2\\x80\\x94', '-', word)
     word = re.sub('\\xef\\xac\\x81', 'fi', word)
     word = re.sub('\\xc2\\xb0', "DEGREE", word)
@@ -430,15 +434,14 @@ def normalize_utf(word):
 
     return word
 
-######
-# Name: extract
-# Input: Document object
-# Return: relation and features for genegene database table
-#
-# Extractor code to generate truth label and features
-######
-
 def extract(doc):
+    """
+    Name: extract
+    Input: Document object
+    Return: relation and features for genegene database table
+
+    Extractor code to generate truth label and features
+    """
 
     for sent in doc.sents:
         genes = []
