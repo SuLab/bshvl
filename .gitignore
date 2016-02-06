@@ -65,6 +65,9 @@ target/
 # DeepDive log and tmp directories
 run/
 
+# DeepDive performance test output
+test*.out
+
 # Mac OS X DS_Store
 .DS_Store
 
