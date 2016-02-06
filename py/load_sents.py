@@ -9,7 +9,7 @@ Loads sentences into database.
 """
 
 from helper.easierlife import *
-from extractor.EntityExtractor_Drug import *
+#from extractor.EntityExtractor_Drug import *
 
 for row in get_inputs():
 	doc = deserialize(row["document"])
