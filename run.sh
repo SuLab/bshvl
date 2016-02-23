@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-export APP_HOME=/home/sandip/deepdive-0.7.1/app/deepdive_genegene_app
+export APP_HOME=/home/sandip/deepdive-0.7.1/app/placeholder_name
 #export DEEPDIVE_HOME=`cd ${APP_HOME}/../../../deepdive; pwd`
 
 # Database Configuration
