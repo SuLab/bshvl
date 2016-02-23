@@ -64,6 +64,7 @@ target/
 
 # DeepDive log and tmp directories
 run/
+data/
 
 # DeepDive performance test output
 test*.out
