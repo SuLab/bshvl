@@ -486,23 +486,11 @@ def extract(doc):
 
                     features = []
 
-                    if w1 == w2:
-                        features.append('SAMEOBJ')
-
                     ## Don't include same genes as mentions ##
                     word1_tmp = re.sub("_", "", w1.word)
                     word2_tmp = re.sub("_", "", w2.word)
                     if w1.word == w2.word or word1_tmp == word2_tmp:
                         continue
-
-                    ## Don't include same genes as mentions ##
-                    if w1.word in dict_name2geneid and w2.word in dict_name2geneid:
-                        geneids1 = dict_name2geneid[w1.word]
-                        geneids2 = dict_name2geneid[w2.word]
-
-                        for geneid1 in geneids1:
-                            if geneid1 in geneids2:
-                                continue
 
                     ############## FEATURE EXTRACTION ####################################
                     
