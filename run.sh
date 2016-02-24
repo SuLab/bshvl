@@ -1,12 +1,12 @@
 #! /usr/bin/env bash
 
-export APP_HOME=/home/sandip/deepdive-0.7.1/app/placeholder_name
+export APP_HOME=/home/sandip/deepdive-0.7.1/app/bshvl
 #export DEEPDIVE_HOME=`cd ${APP_HOME}/../../../deepdive; pwd`
 
 # Database Configuration
 export PGUSER="sandip"
 export PGPASSWORD=""
-export PGDATABASE="deepdive_genegene"
+export PGDATABASE="bshvl"
 export PGHOST="localhost"
 export PGPORT=5432
 
