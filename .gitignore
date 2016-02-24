@@ -72,3 +72,5 @@ test*.out
 # Mac OS X DS_Store
 .DS_Store
 
+# refactor testing diff output
+results.txt
