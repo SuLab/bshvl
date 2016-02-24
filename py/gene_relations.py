@@ -940,6 +940,8 @@ def extract(doc):
 if __name__ == '__main__':
     log("START!")
 
+    random.seed(12345) # to keep logs consistent
+
     load_dict()
 
     for row in fileinput.input():
