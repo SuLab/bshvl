@@ -7,7 +7,9 @@ Contact: emily.mallory@stanford.edu
 
 Extractor for gene-gene relations, compiled
 in a single script
- 
+
+Refactored by: Tong Shu Li (tongli@scripps.edu)
+Last updated: 2016-02-24
 """
 
 import sys
@@ -17,7 +19,7 @@ import re
 import random
 
 #extractor dictionaries
-dict_gene_symbols_all = {} 
+dict_gene_symbols_all = {}
 dict_gene_pruned = {}
 dict_interact = {}
 dict_no_interact = {}
@@ -77,8 +79,6 @@ def dep_path(deptree, sent, lemma, start1, end1, start2, end2):
         commonroot = None
         for i in range(0, len(path1)):
             j = len(path1) - 1 - i
-            #plpy.notice(path1[j])  
-            #plpy.notice(path2[-i-1])  
             if -i-1 <= -len(path2) or path1[j]["current"] != path2[-i-1]["current"]:
                 break
             commonroot = path1[j]["current"]
@@ -93,7 +93,7 @@ def dep_path(deptree, sent, lemma, start1, end1, start2, end2):
                 left_path = left_path + ("--" + path1[i]["label"] + "->" + '|')
             else:
                 w = lemma[path1[i]["parent"]].lower()
-                if i == 0: 
+                if i == 0:
                     w = ""
                 left_path = left_path + ("--" + path1[i]["label"] + "->" + w)
 
@@ -233,7 +233,7 @@ def load_dict():
 
     for l in open(BASE_FOLDER + SUPERVSION_EXCLUDE_DICT):
         ss = l.rstrip().split("\t")
-        
+
         if ss[0] not in dict_exclude_dist_sup:
             dict_exclude_dist_sup[ss[0]] = {}
 
@@ -295,7 +295,7 @@ def load_dict():
                             dict_interact[a2] = {}
                         dict_interact[a1][a2] = 1
                         dict_interact[a2][a1] = 1
-                        
+
                         if pmids.rstrip() in dict_pmid2plos:
                             plos_pmid = dict_pmid2plos[pmids.rstrip()]
                             if plos_pmid in dict_pmid_gene:
@@ -303,7 +303,7 @@ def load_dict():
                                 dict_pmid_gene[plos_pmid][a2] = 1
 
             if pmids.rstrip() in dict_pmid2plos:
-                plos_pmid = dict_pmid2plos[pmids.rstrip()] 
+                plos_pmid = dict_pmid2plos[pmids.rstrip()]
                 if plos_pmid in dict_pmid_gene:
                     dict_pmid_gene[plos_pmid][g1] = 1
                     dict_pmid_gene[plos_pmid][g2] = 1
@@ -384,7 +384,7 @@ def normalize(word):
     Return: normalized word
 
     Normalization for word characters
-    """ 
+    """
     return word.encode("ascii", "ignore").replace("'", '_').replace('{', '-_-').replace('}','-__-').replace('"', '-___-').replace(', ,', ',__')
 
 
@@ -462,7 +462,6 @@ def extract(doc):
         if len(sent.words) <= 50:
             for w1 in genes:
                 for w2 in genes:
-                    
                     #list of ambiguous gene symbols to exclude from detected genes
                     gene_exclusion = ["ECM", "EMT", "AML", "CLL", "ALL", "spatial", "PDF", "ANOVA", "MED", "gamma", "San", "RSS", "2F1", "ROS", "zeta", "ADP", "ALS", "GEF", "GAP"]
 
@@ -493,7 +492,6 @@ def extract(doc):
                         continue
 
                     ############## FEATURE EXTRACTION ####################################
-                    
                     # ##### FEATURE: WORD SEQUENCE BETWEEN MENTIONS AND VERB PATHS #####
                     ws = []
                     verbs_between = []
@@ -527,7 +525,7 @@ def extract(doc):
                                     minp_w2 = p_w2
                                     minw_w2 = sent.words[i].lemma
                                     mini_w2 = sent.words[i].insent_id
-                                
+
                                 if i > 0:
                                     if sent.words[i-1].lemma in ["no", "not", "neither", "nor"]:
                                         if i < maxindex - 2:
@@ -566,7 +564,6 @@ def extract(doc):
                     if len(ws) == 1 and ws[0] == "and" and maxindex < len(sent.words) - 1:
                         if sent.words[maxindex + 1].word in ["interaction", "interactions"]:
                             high_quality_verb = 1
-                    
 
                     ##### FEATURE: WORDS BETWEEN MENTIONS #####
                     if len(ws) < 7 and len(ws) > 0 and "{" not in ws and "}" not in ws and "\"" not in ws and "/" not in ws and "\\" not in ws and "," not in ws:
@@ -628,7 +625,7 @@ def extract(doc):
                             pass
 
                     ##### FEATURE: WINDOW FEATURES #####
-                    bad_char = ["\'", "}", "{", "\"", "-", ",", "[", "]"] 
+                    bad_char = ["\'", "}", "{", "\"", "-", ",", "[", "]"]
                     flag_family = 0
 
                     if minindex > 0:
@@ -639,15 +636,13 @@ def extract(doc):
                                 features.append('WINDOW_LEFT_M1_1_with[%s]' % sent.words[minindex-1].lemma)
 
                     if minindex > 1:
-                        
                         if sent.words[minindex-2].word in dict_gene_pruned:
                             left_phrase = "GENE"+"-"+sent.words[minindex-1].lemma
                         else:
                             left_phrase = sent.words[minindex-2].lemma+"-"+sent.words[minindex-1].lemma
-                        
+
                         if sent.words[minindex - 2].lemma not in bad_char and sent.words[minindex - 1].lemma not in bad_char and "," not in left_phrase:
                             features.append('WINDOW_LEFT_M1_PHRASE_with[%s]' % left_phrase)
-                            
                         elif sent.words[minindex - 2].lemma not in bad_char and "," not in sent.words[minindex - 2].lemma:
                             if sent.words[minindex-2].word in dict_gene_pruned:
                                 features.append('WINDOW_LEFT_M1_2_with[GENE]')
@@ -663,15 +658,13 @@ def extract(doc):
                                 features.append('WINDOW_RIGHT_M2_1_with[%s]' % sent.words[maxindex+1].lemma)
 
                     if maxindex < len(sent.words) - 2:
-                        
                         if sent.words[maxindex + 2].word in dict_gene_pruned:
                             right_phrase = "GENE"+"-"+sent.words[maxindex+1].lemma
                         else:
                             right_phrase = sent.words[maxindex+2].lemma+"-"+sent.words[maxindex+1].lemma
-                        
+
                         if sent.words[maxindex + 2].lemma not in bad_char and sent.words[maxindex + 1].lemma not in bad_char and "," not in right_phrase:
                             features.append('WINDOW_RIGHT_M2_PHRASE_with[%s]' % right_phrase)
-                            
                         elif sent.words[maxindex + 2].lemma not in bad_char and "," not in sent.words[maxindex + 2].lemma:
                             if sent.words[maxindex + 2].word in dict_gene_pruned:
                                 features.append('WINDOW_RIGHT_M2_2_with[GENE]')
@@ -690,10 +683,9 @@ def extract(doc):
                             m1_right_phrase = "GENE"+"-"+sent.words[minindex+1].lemma
                         else:
                             m1_right_phrase = sent.words[minindex+2].lemma+"-"+sent.words[minindex+1].lemma
-            
+
                         if sent.words[minindex + 2].lemma not in bad_char and sent.words[minindex + 1].lemma not in bad_char and "," not in m1_right_phrase:
                             features.append('WINDOW_RIGHT_M1_PHRASE_with[%s]' % m1_right_phrase)
-                            
                         elif sent.words[minindex + 2].lemma not in bad_char and "," not in sent.words[minindex + 2].lemma:
                             if sent.words[minindex+2].word in dict_gene_pruned:
                                 features.append('WINDOW_RIGHT_M1_2_with[GENE]')
@@ -710,10 +702,9 @@ def extract(doc):
                             m2_left_phrase = "GENE"+"-"+sent.words[maxindex-1].lemma
                         else:
                             m2_left_phrase = sent.words[maxindex-2].lemma+"-"+sent.words[maxindex-1].lemma
-    
-                        if sent.words[maxindex - 2].lemma not in bad_char and sent.words[maxindex - 1].lemma not in bad_char and "," not in m2_left_phrase: 
+
+                        if sent.words[maxindex - 2].lemma not in bad_char and sent.words[maxindex - 1].lemma not in bad_char and "," not in m2_left_phrase:
                             features.append('WINDOW_LEFT_M2_PHRASE_with[%s]' % m2_left_phrase)
-                            
                         elif sent.words[maxindex - 2].lemma not in bad_char and "," not in sent.words[maxindex - 2].lemma:
                             if sent.words[maxindex-2].word in dict_gene_pruned:
                                 features.append('WINDOW_LEFT_M2_2_with[GENE]')
@@ -724,23 +715,22 @@ def extract(doc):
                     domain_words = ["domains", "motif", "motifs", "domain", "site", "sites", "region", "regions", "sequence", "sequences", "elements"]
                     found_domain = 0
                     if minindex > 0:
-                        if sent.words[minindex + 1].word in domain_words: 
+                        if sent.words[minindex + 1].word in domain_words:
                             found_domain = 1
                             features.append('GENE_FOLLOWED_BY_DOMAIN_WORD')
-                    
+
                     if maxindex < len(sent.words) - 1 and found_domain == 0:
-                        if sent.words[maxindex + 1].word in domain_words: 
+                        if sent.words[maxindex + 1].word in domain_words:
                             features.append('GENE_FOLLOWED_BY_DOMAIN_WORD')
                             found_domain = 1
 
-                    
                     ##### FEATURE: PLURAL GENES #####
                     found_plural = 0
                     if minindex > 0:
                         if sent.words[minindex + 1].pos == "NNS" or sent.words[minindex + 1].pos == "NNPS": 
                             found_plural = 1
                             features.append('GENE_M1_FOLLOWED_BY_PLURAL_NOUN_with[%s]' % sent.words[minindex + 1].word)
-                    
+
                     if maxindex < len(sent.words) - 1 and found_plural == 0:
                         if sent.words[maxindex + 1].pos == "NNS" or sent.words[maxindex + 1].pos == "NNPS": 
                             found_plural = 1
@@ -803,11 +793,11 @@ def extract(doc):
                     mid2 = doc.docid + '_' + '%d' % sent.sentid + '_' + '%d' % w2.insent_id
 
                     ############## DISTANT SUPERVISION ###################
-                    
+
                     sent_text = sent.__repr__()
                     if sent_text.endswith("\\"):
                         sent_text = sent_text[0:len(sent_text) - 1]
-                    
+
                     if w1.word in dict_exclude_dist_sup and w2.word in dict_exclude_dist_sup[w1.word]:
                         print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
                         log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
@@ -838,7 +828,6 @@ def extract(doc):
                             else:
                                 print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
                                 log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
-                        
                         else:
                             # Negative Example: Mention appear in KB in same doc, but no interaction extracted in KB
                             appear_in_same_doc = False
@@ -903,7 +892,7 @@ def extract(doc):
                                 if doc.docid.split(".pdf")[0] not in dict_gs_docids:
                                     print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"])
                                     log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"]))
-                                    print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])    
+                                    print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
                                     log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
                                 else:
                                     print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
@@ -912,7 +901,7 @@ def extract(doc):
                                 if doc.docid.split(".pdf")[0] not in dict_gs_docids:
                                     print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"])
                                     log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"]))
-                                    print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])                        
+                                    print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
                                     log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
                                 else:
                                     print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
@@ -926,7 +915,7 @@ def extract(doc):
 
 
 if __name__ == '__main__':
-    log("START!")
+    log("START of gene_relations.py!")
 
     random.seed(12345) # to keep logs consistent
 
