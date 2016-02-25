@@ -16,10 +16,15 @@ import random
 import re
 import sys
 
-from itertools import combinations
 from itertools import islice
 
 from helper.easierlife import *
+
+from util import is_verb
+from util import no_comma
+from util import get_short_sentences
+from util import get_gene_pairs
+from util import get_dependency_tree
 
 #extractor dictionaries
 dict_gene_symbols_all = {}
@@ -481,12 +486,6 @@ def extract(doc):
     Extractor code to generate truth label and features
     """
 
-    def get_short_sentences(document):
-        MAX_WORDS_IN_SENTENCE = 50
-        for sentence in document.sents:
-            if len(sentence.words) <= MAX_WORDS_IN_SENTENCE:
-                yield sentence
-
     def get_genes(sentence):
         # list of ambiguous gene symbols to exclude from detected genes
         EXCLUDED_GENES = set([
@@ -501,23 +500,6 @@ def extract(doc):
 
         return genes
 
-    def get_dependency_tree(sentence):
-        lemma = [word.lemma for word in sentence.words]
-        deptree = {
-            word.insent_id: {"label": word.dep_label, "parent": word.dep_par}
-            for word in sentence.words
-        }
-        return (lemma, deptree)
-
-    def get_gene_pairs(genes):
-        def remove_underscores(s):
-            return s.replace("_", "")
-
-        for geneA, geneB in combinations(genes, 2):
-            if remove_underscores(geneA.word) != remove_underscores(geneB.word):
-                yield (geneA, geneB)
-
-
 #-------------------------------------------------------------------------------
 
     for sent in get_short_sentences(doc):
@@ -527,15 +509,22 @@ def extract(doc):
         for w1, w2 in get_gene_pairs(genes):
             assert w1.insent_id < w2.insent_id
 
-            minindex = min(w1.insent_id, w2.insent_id)
-            maxindex = max(w1.insent_id, w2.insent_id)
+            minindex = w1.insent_id
+            maxindex = w2.insent_id
 
+#            minindex = min(w1.insent_id, w2.insent_id)
+#            maxindex = max(w1.insent_id, w2.insent_id)
+
+            # whitespace?
+            ws = [lemma[i] for i in range(minindex+1, maxindex) if no_comma(lemma[i])]
+            ## Do not include as candidates ##
+            if "while" in ws or "whereas" in ws or "but" in ws or "where" in ws or "however" in ws:
+                continue
 
             features = []
 
             ############## FEATURE EXTRACTION ####################################
             # ##### FEATURE: WORD SEQUENCE BETWEEN MENTIONS AND VERB PATHS #####
-            ws = []
             verbs_between = []
             minl_w1 = 100
             minp_w1 = None
@@ -548,8 +537,6 @@ def extract(doc):
             neg_found = 0
 
             for i in range(minindex+1, maxindex):
-                if "," not in sent.words[i].lemma:
-                    ws.append(sent.words[i].lemma)
                 if re.search('VB\w*', sent.words[i].pos): # and sent.words[i].lemma != "be":
                     if sent.words[i].word != "{" and sent.words[i].word != "}" and "," not in sent.words[i].word:
                         p_w1 = sent.get_word_dep_path(minindex, sent.words[i].insent_id)
@@ -575,10 +562,6 @@ def extract(doc):
                             else:
                                 if sent.words[i] != "{" and sent.words[i] != "}":
                                     verbs_between.append(sent.words[i].lemma)
-
-            ## Do not include as candidates ##
-            if "while" in ws or "whereas" in ws or "but" in ws or "where" in ws or "however" in ws:
-                continue
 
             ##### FEATURE: HIGH QUALITY PREP INTERACTION PATTERNS #####
             high_quality_verb = False
