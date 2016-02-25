@@ -11,9 +11,8 @@ import fileinput
 from helper.easierlife import log
 from helper.easierlife import serialize
 
-
-from dstruct.Document import *
-from dstruct.Word import *
+from dstruct.Document import Document
+from dstruct.Word import Word
 
 for row in fileinput.input():
     docid, folder = row.rstrip("\n").split("\t")
