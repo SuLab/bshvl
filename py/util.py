@@ -4,8 +4,8 @@
 """
 Simple utilities for helping the gene-gene extractor.
 """
-
 import re
+import string
 
 from itertools import combinations
 
@@ -67,3 +67,42 @@ def get_dependency_tree(sentence):
         for word in sentence.words
     }
     return (lemma, deptree)
+
+#-------------------------------------------------------------------------------
+
+def start_cap_letter(s):
+    return len(s) > 0 and s[0] in string.ascii_uppercase
+
+def appear_in_same_doc(geneA, geneB, dict_gene_pmid):
+    if start_cap_letter(geneA) and start_cap_letter(geneB) and geneA in dict_gene_pmid:
+        for pmid in dict_gene_pmid[geneA]:
+            if geneB in dict_pmid_gene[pmid]:
+                return True
+
+    return False
+
+def slice(a_list, N):
+    for i in range(len(a_list) - N + 1):
+        yield a_list[i:i+N]
+
+def no_interact_phrase(ws):
+    # check if not interact/bind phrase is in ws and not just the words
+    """
+    WARNING:
+
+    This code is left intentionally wrong. The original code by Mallory fails
+    to check the last possible pair of words in the ws list due to the incorrect
+    out-of-bounds checking condition "j + 1 < len(ws) - 1".
+
+    To check all of the two word pairs in the ws list, she should have written
+    "j + 1 < len(ws)" instead.
+
+    To replicate this bug, we only slice ws[:-1] instead of the correct ws.
+
+    Tong Shu Li
+    2016-02-25
+    """
+    return any(
+        i == "not" and j in set(["bind", "interact", "interacts"])
+        for i, j in slice(ws[:-1], 2)
+    )
