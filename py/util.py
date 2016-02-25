@@ -30,6 +30,25 @@ def is_plural_noun(s):
 
 #-------------------------------------------------------------------------------
 
+def is_gene_list(kind, ws, dict_gene_symbols_all):
+    assert kind in ["A", "B"], "Invalid gene list type."
+
+    if kind == "A":
+        vals = ["_", ",", "_"]
+
+        return all(
+            vals[i%4] == v if i%4 < 3 else v in dict_gene_symbols_all
+            for i, v in enumerate(ws)
+        )
+
+    # gene list type B
+    return all(
+        v == "," if i%2 == 0 else v in dict_gene_symbols_all
+        for i, v in enumerate(ws)
+    )
+
+#-------------------------------------------------------------------------------
+
 def get_short_sentences(document):
     MAX_WORDS_IN_SENTENCE = 50
     for sentence in document.sents:

@@ -25,6 +25,8 @@ from util import no_comma
 from util import is_neg_word
 from util import is_plural_noun
 
+from util import is_gene_list
+
 from util import get_short_sentences
 from util import get_gene_pairs
 from util import get_dependency_tree
@@ -507,6 +509,17 @@ def extract(doc):
         assert isinstance(s, str), "Can't check if {} has a brace!".format(s)
         return s not in "{}"
 
+    def output(label):
+        """Remember, the inner function can access the variables in the outer function!"""
+        vals = [
+            doc.docid, mid1, mid2, w1.word, w2.word,
+            label,
+            feature, sent_text, "\\N"
+        ]
+
+        print "\t".join(vals)
+        log("&&&&&{}".format("\t".join(vals)))
+
 #-------------------------------------------------------------------------------
 
     for sent in get_short_sentences(doc):
@@ -779,55 +792,16 @@ def extract(doc):
                 features.append('GENE_M2_FOLLOWED_BY_PLURAL_NOUN)_with[%s]' % words[maxindex + 1].word)
 
 
-            ##### FEATURE: GENE LISTING #####
+            ##### FEATURE: GENE LISTING ########################################
             if len(ws) > 0:
-                count = 0
-                flag_not_list = 0
-                for w in ws:
+                # why do we need to add the same feature twice?
+                # is this intentional?
+                if ws[-1] == "_" and is_gene_list("A", ws, dict_gene_symbols_all):
+                    features.append("GENE_LISTING")
 
-                    #should be comma
-                    if count % 4 == 0:
-                        if w != '_':
-                            flag_not_list = 1
-                    elif count % 4 == 1:
-                        if w != ",":
-                            flag_not_list = 1
-                    elif count %4 == 2:
-                        if w != "_":
-                            flag_not_list = 1
-                    #should be a gene
-                    else:
-                        if w not in dict_gene_symbols_all:
-                            flag_not_list = 1
-                    count = count + 1
+                if ws[-1] == "," and is_gene_list("B", ws, dict_gene_symbols_all):
+                    features.append("GENE_LISTING")
 
-                if ws[-1] != '_':
-                    flag_not_list = 1
-
-                if flag_not_list == 0:
-                    features.append('GENE_LISTING')
-
-            if len(ws) > 0:
-                count = 0
-                flag_not_list = 0
-                for w in ws:
-
-                    #should be comma
-                    if count % 2 == 0:
-                        if w != ',':
-                            flag_not_list = 1
-
-                    #should be a gene
-                    else:
-                        if w not in dict_gene_symbols_all:
-                            flag_not_list = 1
-                    count = count + 1
-
-                if ws[-1] != ',':
-                    flag_not_list = 1
-
-                if flag_not_list == 0:
-                    features.append('GENE_LISTING')
 
             #### GENERATE FEATURE ARRAY FOR POSTGRESQL #####
             feature = "{" + ','.join(features) + '}'
@@ -839,22 +813,21 @@ def extract(doc):
 
             sent_text = sent.__repr__()
             if sent_text.endswith("\\"):
-                sent_text = sent_text[0:len(sent_text) - 1]
+                sent_text = sent_text[:-1]
 
             if w1.word in dict_exclude_dist_sup and w2.word in dict_exclude_dist_sup[w1.word]:
                 print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
                 log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
-
-            elif sent.words[0].word == "Abbreviations" and sent.words[1].word == "used":
+            elif words[0].word == "Abbreviations" and words[1].word == "used":
                 if doc.docid.split(".pdf")[0] not in dict_gs_docids:
                     print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"])
                     log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"]))
+
                     print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
                     log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
                 else:
                     print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
                     log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
-
             elif w1.word not in dict_abbv and w1.word not in dict_english and w2.word not in dict_english and w2.word not in dict_abbv and w1.word not in dict_domains and w2.word not in dict_domains:
                 if w1.word in dict_interact and w2.word in dict_interact[w1.word] and "mutation" not in sent_text and "mutations" not in sent_text and "variant" not in sent_text and "variants" not in sent_text and "polymorphism" not in sent_text and "polymorphisms" not in sent_text:
 
@@ -956,9 +929,6 @@ def extract(doc):
                 print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
                 log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
 
-
-
-
 #-------------------------------------------------------------------------------
 
 if __name__ == '__main__':
@@ -973,4 +943,4 @@ if __name__ == '__main__':
         try:
             extract(doc)
         except:
-            wrong = True
+            pass
