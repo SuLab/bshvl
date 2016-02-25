@@ -9,20 +9,12 @@ Document class.
 Refactored by: Tong Shu Li
 Last updated: 2016-02-25
 """
-import math
-import copy
-import re
-
-from helper.easierlife import *
-from dstruct.Sentence import *
-from dstruct.Word import *
-from dstruct.Box import *
+from dstruct.Sentence import Sentence
 
 class Document(object):
     def __init__(self, doc_id):
         self.docid = doc_id
-        self.sents = []
-        self.sents.append(Sentence())
+        self.sents = [Sentence()]
 
     def push_word(self, word):
         if not self.sents[-1].push_word(word):
