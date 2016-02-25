@@ -13,5 +13,6 @@ DeepDive application for biological text mining
 * Set up data directory
     * Download PLOS Open Dataset corpus **(CoNLL format)** from http://deepdive.stanford.edu/opendata/#plos-public-library-of-science
     * Extract file and move `plos_full_conll` directory to `data/`
-* Set `$APP_HOME` to app/bshvl
+* Set `$APP_HOME` to `app/bshvl`
+* Replace `util` with a symlink to `~/local/util` by running `cd $APP_HOME && ln -s ~/local/util .`
 * Run DeepDive by running `./run.sh`
