@@ -86,9 +86,7 @@ def dep_path(deptree, sent, lemma, start1, end1, start2, end2):
             commonroot = path1[j]["current"]
 
         left_path = ""
-        lct = 0
         for i in range(0, len(path1)):
-            lct = lct + 1
             if path1[i]["current"] == commonroot:
                 break
             if path1[i]["parent"] == commonroot or path1[i]["parent"]==-1:
@@ -100,9 +98,7 @@ def dep_path(deptree, sent, lemma, start1, end1, start2, end2):
                 left_path = left_path + ("--" + path1[i]["label"] + "->" + w)
 
         right_path = ""
-        rct = 0
         for i in range(0, len(path2)):
-            rct = rct + 1
             if path2[i]["current"] == commonroot:
                 break
             if path2[i]["parent"] == commonroot or path2[i]["parent"]==-1:
@@ -475,6 +471,8 @@ def extract(doc):
                 yield (geneA, geneB)
 
 
+#-------------------------------------------------------------------------------
+
     for sent in get_short_sentences(doc):
         genes = get_genes(sent)
 
@@ -487,6 +485,8 @@ def extract(doc):
 
 
         for w1, w2 in get_gene_pairs(genes):
+            assert w1.insent_id < w2.insent_id
+
             minindex = min(w1.insent_id, w2.insent_id)
             maxindex = max(w1.insent_id, w2.insent_id)
 
