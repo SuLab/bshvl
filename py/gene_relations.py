@@ -500,20 +500,23 @@ def extract(doc):
 
         return genes
 
+    def not_brace(s):
+        assert isinstance(s, str), "Can't check if {} has a brace!".format(s)
+        return s not in "{}"
+
 #-------------------------------------------------------------------------------
 
     for sent in get_short_sentences(doc):
         genes = get_genes(sent)
         lemma, deptree = get_dependency_tree(sent)
 
+        words = sent.words
+
         for w1, w2 in get_gene_pairs(genes):
             assert w1.insent_id < w2.insent_id
 
             minindex = w1.insent_id
             maxindex = w2.insent_id
-
-#            minindex = min(w1.insent_id, w2.insent_id)
-#            maxindex = max(w1.insent_id, w2.insent_id)
 
             # whitespace?
             ws = [lemma[i] for i in range(minindex+1, maxindex) if no_comma(lemma[i])]
@@ -523,8 +526,9 @@ def extract(doc):
 
             features = []
 
-            ############## FEATURE EXTRACTION ####################################
-            # ##### FEATURE: WORD SEQUENCE BETWEEN MENTIONS AND VERB PATHS #####
+            ############## FEATURE EXTRACTION ##################################
+
+            ####### FEATURE: WORD SEQUENCE BETWEEN MENTIONS AND VERB PATHS #####
             verbs_between = []
             minl_w1 = 100
             minp_w1 = None
@@ -534,38 +538,40 @@ def extract(doc):
             minp_w2 = None
             minw_w2 = None
             mini_w2 = None
-            neg_found = 0
+            neg_found = False
 
+            # for each word between the current gene pair
             for i in range(minindex+1, maxindex):
-                if re.search('VB\w*', sent.words[i].pos): # and sent.words[i].lemma != "be":
-                    if sent.words[i].word != "{" and sent.words[i].word != "}" and "," not in sent.words[i].word:
-                        p_w1 = sent.get_word_dep_path(minindex, sent.words[i].insent_id)
-                        p_w2 = sent.get_word_dep_path(sent.words[i].insent_id, maxindex)
+                if is_verb(words[i].pos) and not_brace(words[i].word) and no_comma(words[i].word):
+                    p_w1 = sent.get_word_dep_path(minindex, words[i].insent_id)
+                    p_w2 = sent.get_word_dep_path(words[i].insent_id, maxindex)
 
-                        if len(p_w1) < minl_w1:
-                            minl_w1 = len(p_w1)
-                            minp_w1 = p_w1
-                            minw_w1 = sent.words[i].lemma
-                            mini_w1 = sent.words[i].insent_id
+                    if len(p_w1) < minl_w1:
+                        minl_w1 = len(p_w1)
+                        minp_w1 = p_w1
+                        minw_w1 = lemma[i]
+                        mini_w1 = words[i].insent_id
 
-                        if len(p_w2) < minl_w2:
-                            minl_w2 = len(p_w2)
-                            minp_w2 = p_w2
-                            minw_w2 = sent.words[i].lemma
-                            mini_w2 = sent.words[i].insent_id
+                    if len(p_w2) < minl_w2:
+                        minl_w2 = len(p_w2)
+                        minp_w2 = p_w2
+                        minw_w2 = lemma[i]
+                        mini_w2 = words[i].insent_id
 
-                        if i > 0:
-                            if sent.words[i-1].lemma in ["no", "not", "neither", "nor"]:
-                                if i < maxindex - 2:
-                                    neg_found = 1
-                                    features.append("NEG_VERB_BETWEEN_with[%s]" % sent.words[i-1].word + "-" + sent.words[i].lemma)
-                            else:
-                                if sent.words[i] != "{" and sent.words[i] != "}":
-                                    verbs_between.append(sent.words[i].lemma)
+                    if lemma[i-1] in set(["no", "not", "neither", "nor"]):
+                        if i < maxindex - 2:
+                            neg_found = True
+                            features.append("NEG_VERB_BETWEEN_with[%s]" % words[i-1].word + "-" + lemma[i])
+                    else:
+                        if sent.words[i] != "{" and sent.words[i] != "}":
+                            # I think this is always true because sent.words[i] is a word object
+                            # and therefore never equivalent to a string
+                            # therefore this append always gets run by accident
+                            verbs_between.append(sent.words[i].lemma)
 
             ##### FEATURE: HIGH QUALITY PREP INTERACTION PATTERNS #####
             high_quality_verb = False
-            if len(verbs_between) == 1 and neg_found == 0:
+            if len(verbs_between) == 1 and not neg_found:
                 features.append("SINGLE_VERB_BETWEEN_with[%s]" % verbs_between[0])
                 if verbs_between[0] in ["interact", "associate", "bind", "regulate", "phosporylate", "phosphorylated"]:
                     high_quality_verb = True
