@@ -17,6 +17,7 @@ import re
 import sys
 
 from itertools import combinations
+from itertools import islice
 
 from helper.easierlife import *
 
@@ -45,15 +46,11 @@ dict_gs_docids = set()
 def dep_path(deptree, lemma, start1, start2):
     """
     Name: dep_path
-    Input: dependency tree, sentence, lemma, and start word postions
+    Input: dependency tree, lemma, and start word postions
     Return: Dependency path between two words
 
     Simplified version of Sentence class dependency path code
     """
-
-    # the dependency tree has at most 50 words because each sentence has at most
-    # 50 words
-    assert len(deptree) <= 50
 
     def get_path(node):
         """Given a starting node, walk the dependency tree and return the path walked."""
@@ -123,45 +120,46 @@ def dep_path(deptree, lemma, start1, start2):
 
         return pathA[-pos+1]["current"] if pos > 1 else None
 
+    def walk_path(path, direction, common_root):
+        assert direction in ["left", "right"], "Wrong walk path direction."
 
-    if len(deptree) > 0:
-        path1 = get_path(start1)
-        path2 = get_path(start2)
+        route = []
+        arrow = "->" if direction == "right" else "<-"
 
-        commonroot = get_common_root(path1, path2)
+        if path[0]["current"] != common_root:
+            route += ["--", path[0]["label"], arrow]
 
-        left_path = ""
-        for i in range(0, len(path1)):
-            if path1[i]["current"] == commonroot:
-                break
-            if path1[i]["parent"] == commonroot or path1[i]["parent"]==-1:
-                left_path = left_path + ("--" + path1[i]["label"] + "->" + '|')
-            else:
-                w = lemma[path1[i]["parent"]].lower()
-                if i == 0:
-                    w = ""
-                left_path = left_path + ("--" + path1[i]["label"] + "->" + w)
+            for node in islice(path, 1, None):
+                if node["current"] == common_root:
+                    break
 
-        right_path = ""
-        for i in range(0, len(path2)):
-            if path2[i]["current"] == commonroot:
-                break
-            if path2[i]["parent"] == commonroot or path2[i]["parent"]==-1:
-                right_path = ('|' + "<-" + path2[i]["label"] + "--") + right_path
-            else:
-                w = lemma[path2[i]["parent"]].lower()
-                if i == 0:
-                    w = ""
-                right_path = (w + "<-" + path2[i]["label"] + "--" ) + right_path
+                route += ["--", node["label"], arrow]
+                if node["parent"] != common_root and node["parent"] != -1:
+                    route.append(lemma[node["parent"]].lower())
 
+            route.append("|")
 
-        if commonroot is None:
-            return left_path + "NONEROOT" + right_path
+        return "".join(route if direction == "right" else route[::-1])
 
-        if commonroot == start1 or commonroot == start2:
-            return left_path + "SAMEPATH" + right_path
+    # length of the dependency tree should be the length of the sentence, which
+    # should always be greater than zero and <= 50
+    assert 0 < len(deptree) <= 50, "Deptree length out of bounds."
 
-        return left_path + lemma[commonroot].lower() + right_path
+    path1 = get_path(start1)
+    path2 = get_path(start2)
+
+    common_root = get_common_root(path1, path2)
+
+    left_path = walk_path(path1, "right", common_root)
+    right_path = walk_path(path2, "left", common_root)
+
+    if commonroot is None:
+        return left_path + "NONEROOT" + right_path
+
+    if common_root == start1 or common_root == start2:
+        return left_path + "SAMEPATH" + right_path
+
+    return left_path + lemma[common_root].lower() + right_path
 
 
 def load_dict():
