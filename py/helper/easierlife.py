@@ -54,14 +54,8 @@ def deserialize(obj):
 	return pickle.loads(asciiDecompress(obj.encode("utf-8")))
 
 def get_inputs():
-	for line in fileinput.input():
-		#line = line.rstrip()
-		yield json.loads(line)
-		#try:
-		#	yield json.loads(line)
-		#except:
-		#	log("ERROR!  :  " + line)
-
+    for line in fileinput.input():
+        yield json.loads(line)
 
 def dump_input(out_file):
     with open(out_file, "w") as fout:
