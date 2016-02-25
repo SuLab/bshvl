@@ -586,13 +586,14 @@ def extract(doc):
                         high_quality_verb = True
 
 
-            if len(ws) == 1 and ws[0] == "-" and maxindex < len(sent.words) - 1:
-                if sent.words[maxindex + 1].lemma == "complex":
+            if len(ws) == 1 and maxindex < len(words) - 1:
+                if ((ws[0] == "-" and lemma[maxindex + 1] == "complex")
+                    or (ws[0] == "and" and words[maxindex + 1].word in ["interaction", "interactions"])):
                     high_quality_verb = True
 
-            if len(ws) == 1 and ws[0] == "and" and maxindex < len(sent.words) - 1:
-                if sent.words[maxindex + 1].word in ["interaction", "interactions"]:
-                    high_quality_verb = True
+
+
+
 
             ##### FEATURE: WORDS BETWEEN MENTIONS #####
             if len(ws) < 7 and len(ws) > 0 and "{" not in ws and "}" not in ws and "\"" not in ws and "/" not in ws and "\\" not in ws and "," not in ws:
