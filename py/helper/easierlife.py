@@ -1,13 +1,11 @@
-#! /usr/bin/env python
-
+#!/usr/bin/env python
 """
 Author: Emily K Mallory and Ce Zhang
 Date: 08/24/15
 Contact: emily.mallory@stanford.edu
 
-Helper functions for application 
+Helper functions for application.
 """
-
 import fileinput
 import json
 import math
@@ -64,15 +62,8 @@ def get_inputs():
 		#except:
 		#	log("ERROR!  :  " + line)
 
-def dump_input(OUTFILE):
-	fo = open(OUTFILE, 'w')
-	for line in fileinput.input():
-		fo.write(line)
-	fo.close()
 
-
-
-
-
-
-
+def dump_input(out_file):
+    with open(out_file, "w") as fout:
+        for line in fileinput.input():
+            fout.write(line)
