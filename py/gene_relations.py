@@ -153,7 +153,7 @@ def dep_path(deptree, lemma, start1, start2):
     left_path = walk_path(path1, "right", common_root)
     right_path = walk_path(path2, "left", common_root)
 
-    if commonroot is None:
+    if common_root is None:
         return left_path + "NONEROOT" + right_path
 
     if common_root == start1 or common_root == start2:
