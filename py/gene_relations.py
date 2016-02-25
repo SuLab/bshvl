@@ -592,21 +592,31 @@ def extract(doc):
                     high_quality_verb = True
 
 
-
-
-
-            ##### FEATURE: WORDS BETWEEN MENTIONS #####
-            if len(ws) < 7 and len(ws) > 0 and "{" not in ws and "}" not in ws and "\"" not in ws and "/" not in ws and "\\" not in ws and "," not in ws:
-                 if " ".join(ws) not in ["_ and _", "and", "or",  "_ or _"]:
+            ##### FEATURE: WORDS BETWEEN MENTIONS ##############################
+            if 0 < len(ws) < 7 and set(ws).isdisjoint(set(["{", "}", "\"", "/", "\\", ","])):
+                 if " ".join(ws) not in set(["_ and _", "and", "or",  "_ or _"]):
                      features.append("WORDS_BETWEEN_with[%s]" % " ".join(ws))
 
-            ##### FEATURE: 3-GRAM WORD SEQUENCE #####
-            bad_char = ["\'", "}", "{", "\"", "-", ",", "[", "]"] #think about adding parens
-            if len(ws) > 4 and len(ws) < 15:
-                for i in range(2,len(ws)):
-                    if ws[i-2] not in bad_char and ws[i - 1] not in bad_char and ws[i] not in bad_char:
-                        if "," not in ws[i-2] and "," not in ws[i-1] and "," not in ws:
-                            features.append("WS_3_GRAM_with[" + ws[i - 2] + "-" + ws[i - 1] + "-" + ws[i]+"]")
+
+            ##### FEATURE: 3-GRAM WORD SEQUENCE ################################
+            """
+            WARNING:
+
+            Mallory messed up this block of code. When checking the 3-gram, she
+            accidentally wrote no_comma(ws) instead of no_comma(ws[i+2]).
+            Therefore this does not correctly check the 3-gram. To fix this
+            bug, change no_comma(ws) to no_comma(ws[i+2]).
+
+            Tong Shu Li
+            2016-02-24
+            """
+            BAD_CHARS = set(["\'", "\"", "{", "}", "[", "]", "-", ","])
+            if 4 < len(ws) < 15:
+                for i in range(len(ws) - 3 + 1):
+                    if BAD_CHARS.isdisjoint(set(ws[i:i+3])):
+                        if no_comma(ws[i]) and no_comma(ws[i+1]) and no_comma(ws):
+                            features.append("WS_3_GRAM_with[{}]".format("-".join(ws[i:i+3])))
+
 
             ##### FEATURE: PREPOSITIONAL PATTERNS #####
             if minindex > 1:
