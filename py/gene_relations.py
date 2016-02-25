@@ -14,8 +14,6 @@ import random
 import re
 import sys
 
-from itertools import islice
-
 from helper.easierlife import *
 
 from util import is_verb
@@ -32,6 +30,8 @@ from util import get_gene_pairs
 from util import get_dependency_tree
 
 from dependency_tree import dep_path
+
+from load_dicts import get_gold_std_docids
 
 #extractor dictionaries
 dict_gene_symbols_all = {}
@@ -52,17 +52,11 @@ dict_abbv = {}
 dict_domains = {}
 dict_y2h = {}
 dict_pmid2plos = {}
+
 dict_gs_docids = set()
 
 def load_dict():
-
-    """
-    Name: load_dict
-    Input: None
-    Return: None
-
-    Store all relevant dictionaries for the gene-gene extractor
-    """
+    """Load relevant dictionaries for the gene-gene extractor."""
 
     csv.field_size_limit(sys.maxsize)
     GENE_DICT = "/dicts/genes_pruned.tsv"
@@ -75,16 +69,7 @@ def load_dict():
     TF_DICT = "/dicts/chea-background.csv"
     PLOS2PMID_BIOGRID_DICT = "/dicts/plos_journals_BioGRID_pmids.txt"
 
-    #GS filter
-    INPUT_FILE_GS_SKIP = "/data/plos_journals_dip_mint_pmids.txt"
-    INPUT_FILE_10K_SKIP = "/data/plos_docids_sample_10000.txt"
-
-    #gold standard docids
-    for x in [x.strip().split("\t")[0] for x in open(BASE_FOLDER + INPUT_FILE_GS_SKIP).readlines()]:
-        dict_gs_docids.add(x.rstrip().split(".pdf")[0].lower())
-
-    for x in [x.strip() for x in open(BASE_FOLDER + INPUT_FILE_10K_SKIP).readlines()]:
-        dict_gs_docids.add(x.rstrip().split(".pdf")[0].lower())
+    dict_gs_docids = get_gold_std_docids(BASE_FOLDER)
 
     #dictionary with all gene symbols, not pruned
     with open(BASE_FOLDER + GENE_DICT_ALL) as tsv:
