@@ -11,13 +11,11 @@ Last updated: 2016-02-25
 """
 import fileinput
 import json
-import math
 import zlib
 import base64
 import sys
 import os
 import cPickle as pickle
-import itertools
 import os
 
 BASE_FOLDER, throwaway = os.path.split(os.path.realpath(__file__))
