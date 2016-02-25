@@ -42,7 +42,7 @@ dict_pmid2plos = {}
 dict_gs_docids = set()
 
 
-def dep_path(deptree, sent, lemma, start1, start2):
+def dep_path(deptree, lemma, start1, start2):
     """
     Name: dep_path
     Input: dependency tree, sentence, lemma, and start word postions
@@ -155,11 +155,11 @@ def dep_path(deptree, sent, lemma, start1, start2):
                 right_path = (w + "<-" + path2[i]["label"] + "--" ) + right_path
 
 
-        if commonroot == start1 or commonroot == start2:
-            return left_path + "SAMEPATH" + right_path
-
         if commonroot is None:
             return left_path + "NONEROOT" + right_path
+
+        if commonroot == start1 or commonroot == start2:
+            return left_path + "SAMEPATH" + right_path
 
         return left_path + lemma[commonroot].lower() + right_path
 
@@ -643,7 +643,7 @@ def extract(doc):
                 features.append(feature2)
 
             ##### FEATURE: DEPENDENCY PATH #####
-            p = dep_path(deptree, sent, lemma, w1.insent_id, w2.insent_id)
+            p = dep_path(deptree, lemma, w1.insent_id, w2.insent_id)
             word1_parent_idx = w1.dep_par
             word1_parent_path = w1.dep_label
 
