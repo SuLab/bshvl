@@ -42,41 +42,43 @@ dict_pmid2plos = {}
 dict_gs_docids = set()
 
 
-def dep_path(deptree, sent, lemma, start1, end1, start2, end2):
+def dep_path(deptree, sent, lemma, start1, start2):
     """
     Name: dep_path
-    Input: dependency tree, sentence, lemma, and start and end word postions
+    Input: dependency tree, sentence, lemma, and start word postions
     Return: Dependency path between two words
 
     Simplified version of Sentence class dependency path code
     """
 
-    if len(deptree) > 0:
-        path1 = []
-        end = end1 - 1
-        ct = 0
-        while True:
-            ct = ct + 1
-            if ct > 100:
-                break
-            if end not in deptree:
-                path1.append({"current":end, "parent": -1, "label":"ROOT"})
-                break
-            path1.append({"current":end, "parent": deptree[end]["parent"], "label":deptree[end]["label"]})
-            end = deptree[end]["parent"]
+    # the dependency tree has at most 50 words because each sentence has at most
+    # 50 words
+    assert len(deptree) <= 50
 
-        path2 = []
-        end = end2 - 1
-        ct = 0
-        while True:
-            ct = ct + 1
-            if ct > 100:
-                break
-            if end not in deptree:
-                path2.append({"current":end, "parent": -1, "label":"ROOT"})
-                break
-            path2.append({"current":end, "parent": deptree[end]["parent"], "label":deptree[end]["label"]})
-            end = deptree[end]["parent"]
+    def get_path(node):
+        """Given a starting node, walk the dependency tree and return the path walked."""
+        path = []
+        while node in deptree:
+            path.append({
+                "current": node,
+                "parent": deptree[node]["parent"],
+                "label": deptree[node]["label"]
+            })
+
+            node = deptree[node]["parent"]
+
+        path.append({
+            "current": node,
+            "parent": -1,
+            "label": "ROOT"
+        })
+
+        return path
+
+
+    if len(deptree) > 0:
+        path1 = get_path(start1)
+        path2 = get_path(start2)
 
         commonroot = None
         for i in range(0, len(path1)):
@@ -110,7 +112,8 @@ def dep_path(deptree, sent, lemma, start1, end1, start2, end2):
                 right_path = (w + "<-" + path2[i]["label"] + "--" ) + right_path
 
         path = ""
-        if commonroot == end1-1 or commonroot == end2-1:
+
+        if commonroot == start1 or commonroot == start2:
             path = left_path + "SAMEPATH" + right_path
         else:
             if commonroot != None:
@@ -602,7 +605,7 @@ def extract(doc):
                 features.append(feature2)
 
             ##### FEATURE: DEPENDENCY PATH #####
-            p = dep_path(deptree, sent, lemma, w1.insent_id, w1.insent_id+1,w2.insent_id,w2.insent_id+1)
+            p = dep_path(deptree, sent, lemma, w1.insent_id, w2.insent_id)
             word1_parent_idx = w1.dep_par
             word1_parent_path = w1.dep_label
 
