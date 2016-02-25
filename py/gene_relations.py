@@ -22,6 +22,8 @@ from helper.easierlife import *
 
 from util import is_verb
 from util import no_comma
+from util import is_neg_word
+
 from util import get_short_sentences
 from util import get_gene_pairs
 from util import get_dependency_tree
@@ -521,7 +523,7 @@ def extract(doc):
             # whitespace?
             ws = [lemma[i] for i in range(minindex+1, maxindex) if no_comma(lemma[i])]
             ## Do not include as candidates ##
-            if "while" in ws or "whereas" in ws or "but" in ws or "where" in ws or "however" in ws:
+            if not set(ws).isdisjoint(set(["while", "whereas", "but", "where", "however"])):
                 continue
 
             features = []
@@ -558,34 +560,31 @@ def extract(doc):
                         minw_w2 = lemma[i]
                         mini_w2 = words[i].insent_id
 
-                    if lemma[i-1] in set(["no", "not", "neither", "nor"]):
+                    if is_neg_word(lemma[i-1]):
                         if i < maxindex - 2:
                             neg_found = True
                             features.append("NEG_VERB_BETWEEN_with[%s]" % words[i-1].word + "-" + lemma[i])
                     else:
-                        if sent.words[i] != "{" and sent.words[i] != "}":
-                            # I think this is always true because sent.words[i] is a word object
-                            # and therefore never equivalent to a string
-                            # therefore this append always gets run by accident
-                            verbs_between.append(sent.words[i].lemma)
+                        verbs_between.append(sent.words[i].lemma)
 
-            ##### FEATURE: HIGH QUALITY PREP INTERACTION PATTERNS #####
+
+            ##### FEATURE: HIGH QUALITY PREP INTERACTION PATTERNS ##############
             high_quality_verb = False
             if len(verbs_between) == 1 and not neg_found:
                 features.append("SINGLE_VERB_BETWEEN_with[%s]" % verbs_between[0])
-                if verbs_between[0] in ["interact", "associate", "bind", "regulate", "phosporylate", "phosphorylated"]:
+
+                if verbs_between[0] in set(["interact", "associate", "bind", "regulate", "phosporylate", "phosphorylated"]):
                     high_quality_verb = True
             else:
                 for verb in verbs_between:
                     features.append("VERB_BETWEEN_with[%s]" % verb)
 
+
             if len(ws) == 1 and ws[0] == "and" and minindex > 1:
-                if minindex > 2:
-                    if sent.words[minindex - 3].lemma not in ["no", "not", "neither", "nor"] and \
-                    sent.words[minindex - 1].lemma in ["of", "between"] and sent.words[minindex - 2].word in ["interaction", "binding"]:
+                if lemma[minindex - 1] in ["of", "between"] and words[minindex - 2].word in ["interaction", "binding"]:
+                    if minindex == 2 or minindex > 2 and not is_neg_word(lemma[minindex - 3]):
                         high_quality_verb = True
-                elif sent.words[minindex - 1].lemma in ["of", "between"] and sent.words[minindex - 2].word in ["interaction", "binding"]:
-                    high_quality_verb = True
+
 
             if len(ws) == 1 and ws[0] == "-" and maxindex < len(sent.words) - 1:
                 if sent.words[maxindex + 1].lemma == "complex":

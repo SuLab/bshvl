@@ -10,13 +10,19 @@ import re
 from itertools import combinations
 
 def is_verb(s):
+    assert isinstance(s, str)
     return re.search(r'VB\w*', s) is not None
 
 def no_comma(s):
     return "," not in s
 
 def remove_underscores(s):
+    assert isinstance(s, str)
     return s.replace("_", "")
+
+def is_neg_word(s):
+    assert isinstance(s, str)
+    return s in set(["no", "not", "neither", "nor"])
 
 #-------------------------------------------------------------------------------
 
