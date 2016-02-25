@@ -75,17 +75,20 @@ def dep_path(deptree, sent, lemma, start1, start2):
 
         return path
 
+    def get_common_root(pathA, pathB):
+        pos = 1
+        while (pos <= len(pathA) and pos <= len(pathB)
+            and pathA[-pos]["current"] == pathB[-pos]["current"]):
+            pos += 1
+
+        return pathA[-pos+1]["current"] if pos > 1 else None
+
 
     if len(deptree) > 0:
         path1 = get_path(start1)
         path2 = get_path(start2)
 
-        commonroot = None
-        for i in range(0, len(path1)):
-            j = len(path1) - 1 - i
-            if -i-1 <= -len(path2) or path1[j]["current"] != path2[-i-1]["current"]:
-                break
-            commonroot = path1[j]["current"]
+        commonroot = get_common_root(path1, path2)
 
         left_path = ""
         for i in range(0, len(path1)):
@@ -111,19 +114,15 @@ def dep_path(deptree, sent, lemma, start1, start2):
                     w = ""
                 right_path = (w + "<-" + path2[i]["label"] + "--" ) + right_path
 
-        path = ""
+
 
         if commonroot == start1 or commonroot == start2:
-            path = left_path + "SAMEPATH" + right_path
-        else:
-            if commonroot != None:
-                path = left_path + lemma[commonroot].lower() + right_path
-            else:
-                path = left_path + "NONEROOT" + right_path
-        if path != "":
-            return path
-        else:
-            return None
+            return left_path + "SAMEPATH" + right_path
+
+        if commonroot is None:
+            return left_path + "NONEROOT" + right_path
+
+        return left_path + lemma[commonroot].lower() + right_path
 
 
 def load_dict():
