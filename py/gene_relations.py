@@ -816,34 +816,22 @@ def extract(doc):
                 sent_text = sent_text[:-1]
 
             if w1.word in dict_exclude_dist_sup and w2.word in dict_exclude_dist_sup[w1.word]:
-                print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
-                log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
+                output("\\N")
             elif words[0].word == "Abbreviations" and words[1].word == "used":
                 if doc.docid.split(".pdf")[0] not in dict_gs_docids:
-                    print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"])
-                    log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"]))
+                    output("false")
 
-                    print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
-                    log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
-                else:
-                    print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
-                    log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
+                output("\\N")
             elif w1.word not in dict_abbv and w1.word not in dict_english and w2.word not in dict_english and w2.word not in dict_abbv and w1.word not in dict_domains and w2.word not in dict_domains:
                 if w1.word in dict_interact and w2.word in dict_interact[w1.word] and "mutation" not in sent_text and "mutations" not in sent_text and "variant" not in sent_text and "variants" not in sent_text and "polymorphism" not in sent_text and "polymorphisms" not in sent_text:
 
                     if not found_domain and flag_family == 0:
                         if doc.docid.split(".pdf")[0] not in dict_gs_docids:
-                            print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "true", feature, sent_text, "\\N"])
-                            log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "true", feature, sent_text, "\\N"]))
-                            print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
-                            log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
-                        else:
-                            print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
-                            log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
+                            output("true")
 
+                        output("\\N")
                     else:
-                        print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
-                        log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
+                        output("\\N")
                 else:
                     # Negative Example: Mention appear in KB in same doc, but no interaction extracted in KB
                     appear_in_same_doc = False
@@ -876,58 +864,35 @@ def extract(doc):
                     elif w2.word in dict_no_interact and ("binds" not in ws and "interacts" not in ws and "interacted" not in ws and "bound" not in ws and "complex" not in ws and "associates" not in ws and "associated" not in ws and "bind" not in ws and "interact" not in ws):
                         if w1.word in dict_no_interact[w2.word] and not high_quality_verb:
                             if doc.docid.split(".pdf")[0] not in dict_gs_docids:
-                                print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"])
-                                log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"]))
-                                print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
-                                log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
-                            else:
-                                print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
-                                log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
+                                output("false")
+
+                            output("\\N")
                         else:
-                            print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
-                            log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
+                            output("\\N")
                     elif appear_in_same_doc == True and ("binds" not in ws and "interacts" not in ws and "interacted" not in ws and "bound" not in ws and "complex" not in ws and "associates" not in ws and "associated" not in ws and "bind" not in ws and "interact" not in ws ) and not high_quality_verb:
                         if doc.docid.split(".pdf")[0] not in dict_gs_docids:
-                            print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"])
-                            log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"]))
-                            print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
-                            log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
-                        else:
-                            print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
-                            log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
-                    elif no_interact_phrase == True and not high_quality_verb: #("binds" in ws or "interacts" in ws or "bind" in ws or "interact" in ws) and "not" in ws:
+                            output("false")
+
+                        output("\\N")
+                    elif no_interact_phrase and not high_quality_verb:
                         if doc.docid.split(".pdf")[0] not in dict_gs_docids:
-                            print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"])
-                            log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"]))
-                            print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
-                            log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
-                        else:
-                            print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
-                            log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
+                            output("false")
+
+                        output("\\N")
                     elif w1.ner == "Person" or w2.ner == "Person":
                         if doc.docid.split(".pdf")[0] not in dict_gs_docids:
-                            print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"])
-                            log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"]))
-                            print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
-                            log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
-                        else:
-                            print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
-                            log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
+                            output("false")
+
+                        output("\\N")
                     elif random.random() < .08 and not high_quality_verb:
                         if doc.docid.split(".pdf")[0] not in dict_gs_docids:
-                            print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"])
-                            log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"]))
-                            print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
-                            log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
-                        else:
-                            print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
-                            log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
+                            output("false")
+
+                        output("\\N")
                     else:
-                        print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
-                        log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
+                        output("\\N")
             else:
-                print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
-                log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
+                output("\\N")
 
 #-------------------------------------------------------------------------------
 
