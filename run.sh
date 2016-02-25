@@ -1,8 +1,10 @@
 #! /usr/bin/env bash
 
 export APP_HOME=/home/sandip/deepdive-0.7.1/app/bshvl
+export PATH=~/local/bin:$PATH
 
-echo "Running application at $APP_HOME"
+echo "Running DeepDive located at `which deepdive`"
+echo "Running DD application at $APP_HOME"
 
 # Database Configuration
 export PGUSER=`whoami`
