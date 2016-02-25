@@ -23,6 +23,7 @@ from helper.easierlife import *
 from util import is_verb
 from util import no_comma
 from util import is_neg_word
+from util import is_plural_noun
 
 from util import get_short_sentences
 from util import get_gene_pairs
@@ -751,30 +752,32 @@ def extract(doc):
                     else:
                         features.append('WINDOW_LEFT_M2_2_with[%s]' % sent.words[maxindex-2].lemma)
 
-            ##### FEATURE: DOMAIN #####
-            domain_words = ["domains", "motif", "motifs", "domain", "site", "sites", "region", "regions", "sequence", "sequences", "elements"]
-            found_domain = 0
-            if minindex > 0:
-                if sent.words[minindex + 1].word in domain_words:
-                    found_domain = 1
-                    features.append('GENE_FOLLOWED_BY_DOMAIN_WORD')
 
-            if maxindex < len(sent.words) - 1 and found_domain == 0:
-                if sent.words[maxindex + 1].word in domain_words:
-                    features.append('GENE_FOLLOWED_BY_DOMAIN_WORD')
-                    found_domain = 1
+            ##### FEATURE: DOMAIN ##############################################
+            DOMAIN_WORDS = set([
+                "domain", "domains", "motif", "motifs", "site", "sites",
+                "region", "regions", "sequence", "sequences", "elements"
+            ])
 
-            ##### FEATURE: PLURAL GENES #####
-            found_plural = 0
-            if minindex > 0:
-                if sent.words[minindex + 1].pos == "NNS" or sent.words[minindex + 1].pos == "NNPS": 
-                    found_plural = 1
-                    features.append('GENE_M1_FOLLOWED_BY_PLURAL_NOUN_with[%s]' % sent.words[minindex + 1].word)
+            found_domain = False
+            if ((minindex > 0 and words[minindex + 1].word in DOMAIN_WORDS)
+                or (maxindex < len(words) - 1 and words[maxindex + 1].word in DOMAIN_WORDS)):
+                features.append("GENE_FOLLOWED_BY_DOMAIN_WORD")
+                found_domain = True
 
-            if maxindex < len(sent.words) - 1 and found_plural == 0:
-                if sent.words[maxindex + 1].pos == "NNS" or sent.words[maxindex + 1].pos == "NNPS": 
-                    found_plural = 1
-                    features.append('GENE_M2_FOLLOWED_BY_PLURAL_NOUN)_with[%s]' % sent.words[maxindex + 1].word)
+
+            ##### FEATURE: PLURAL GENES ########################################
+            """
+            WARNING:
+
+            There is a typo for the second feature name. There should be no
+            right parenthesis after "NOUN". This typo was kept for consistency.
+            """
+            if minindex > 0 and is_plural_noun(words[minindex + 1].pos):
+                features.append('GENE_M1_FOLLOWED_BY_PLURAL_NOUN_with[%s]' % words[minindex + 1].word)
+            elif maxindex < len(words) - 1 and is_plural_noun(words[maxindex + 1].pos):
+                features.append('GENE_M2_FOLLOWED_BY_PLURAL_NOUN)_with[%s]' % words[maxindex + 1].word)
+
 
             ##### FEATURE: GENE LISTING #####
             if len(ws) > 0:
@@ -855,7 +858,7 @@ def extract(doc):
             elif w1.word not in dict_abbv and w1.word not in dict_english and w2.word not in dict_english and w2.word not in dict_abbv and w1.word not in dict_domains and w2.word not in dict_domains:
                 if w1.word in dict_interact and w2.word in dict_interact[w1.word] and "mutation" not in sent_text and "mutations" not in sent_text and "variant" not in sent_text and "variants" not in sent_text and "polymorphism" not in sent_text and "polymorphisms" not in sent_text:
 
-                    if found_domain == 0 and flag_family == 0:
+                    if not found_domain and flag_family == 0:
                         if doc.docid.split(".pdf")[0] not in dict_gs_docids:
                             print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "true", feature, sent_text, "\\N"])
                             log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "true", feature, sent_text, "\\N"]))

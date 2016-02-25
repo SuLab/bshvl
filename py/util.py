@@ -1,6 +1,6 @@
 # Tong Shu Li
 # Created on: 2016-02-24
-# Last updated: 2016-02-24
+# Last updated: 2016-02-25
 """
 Simple utilities for helping the gene-gene extractor.
 """
@@ -23,6 +23,10 @@ def remove_underscores(s):
 def is_neg_word(s):
     assert isinstance(s, str)
     return s in set(["no", "not", "neither", "nor"])
+
+def is_plural_noun(s):
+    assert isinstance(s, str)
+    return s in ["NNS", "NNPS"]
 
 #-------------------------------------------------------------------------------
 
