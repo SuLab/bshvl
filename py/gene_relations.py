@@ -501,6 +501,14 @@ def extract(doc):
 
         return genes
 
+    def get_dependency_tree(sentence):
+        lemma = [word.lemma for word in sentence.words]
+        deptree = {
+            word.insent_id: {"label": word.dep_label, "parent": word.dep_par}
+            for word in sentence.words
+        }
+        return (lemma, deptree)
+
     def get_gene_pairs(genes):
         def remove_underscores(s):
             return s.replace("_", "")
@@ -514,14 +522,7 @@ def extract(doc):
 
     for sent in get_short_sentences(doc):
         genes = get_genes(sent)
-
-        lemma = []
-        deptree = {}
-
-        for word in sent.words:
-            deptree[word.insent_id] = {"label":word.dep_label, "parent":word.dep_par}
-            lemma.append(word.lemma)
-
+        lemma, deptree = get_dependency_tree(sent)
 
         for w1, w2 in get_gene_pairs(genes):
             assert w1.insent_id < w2.insent_id
@@ -546,7 +547,6 @@ def extract(doc):
             mini_w2 = None
             neg_found = 0
 
-            high_quality_verb = 0
             for i in range(minindex+1, maxindex):
                 if "," not in sent.words[i].lemma:
                     ws.append(sent.words[i].lemma)
@@ -581,11 +581,11 @@ def extract(doc):
                 continue
 
             ##### FEATURE: HIGH QUALITY PREP INTERACTION PATTERNS #####
-            high_quality_verb = 0
+            high_quality_verb = False
             if len(verbs_between) == 1 and neg_found == 0:
                 features.append("SINGLE_VERB_BETWEEN_with[%s]" % verbs_between[0])
                 if verbs_between[0] in ["interact", "associate", "bind", "regulate", "phosporylate", "phosphorylated"]:
-                    high_quality_verb = 1
+                    high_quality_verb = True
             else:
                 for verb in verbs_between:
                     features.append("VERB_BETWEEN_with[%s]" % verb)
@@ -594,17 +594,17 @@ def extract(doc):
                 if minindex > 2:
                     if sent.words[minindex - 3].lemma not in ["no", "not", "neither", "nor"] and \
                     sent.words[minindex - 1].lemma in ["of", "between"] and sent.words[minindex - 2].word in ["interaction", "binding"]:
-                        high_quality_verb = 1
+                        high_quality_verb = True
                 elif sent.words[minindex - 1].lemma in ["of", "between"] and sent.words[minindex - 2].word in ["interaction", "binding"]:
-                    high_quality_verb = 1
+                    high_quality_verb = True
 
             if len(ws) == 1 and ws[0] == "-" and maxindex < len(sent.words) - 1:
                 if sent.words[maxindex + 1].lemma == "complex":
-                    high_quality_verb = 1
+                    high_quality_verb = True
 
             if len(ws) == 1 and ws[0] == "and" and maxindex < len(sent.words) - 1:
                 if sent.words[maxindex + 1].word in ["interaction", "interactions"]:
-                    high_quality_verb = 1
+                    high_quality_verb = True
 
             ##### FEATURE: WORDS BETWEEN MENTIONS #####
             if len(ws) < 7 and len(ws) > 0 and "{" not in ws and "}" not in ws and "\"" not in ws and "/" not in ws and "\\" not in ws and "," not in ws:
@@ -624,7 +624,7 @@ def extract(doc):
                 if sent.words[minindex - 2].lemma.lower() in ["association", "interaction", "complex", "activation", "bind", "binding"]:
                     if sent.words[minindex - 1].word.lower() in ["of", "between"] and ("with" in ws or "and" in ws or "to" in ws) and len(ws) ==1:
                         features.append("PREP_PATTERN[{0}_{1}_{2}]".format(sent.words[minindex-2].lemma.lower(), sent.words[minindex-1].word.lower(), sent.words[minindex+1].word.lower()))
-                        high_quality_verb = 1
+                        high_quality_verb = True
 
 
             ##### FEATURE: NEGATED GENES #####
@@ -886,7 +886,7 @@ def extract(doc):
                                 no_interact_phrase = True
 
                     if w1.word in dict_no_interact and ("binds" not in ws and "interacts" not in ws and "interacted" not in ws and "bound" not in ws and "complex" not in ws and "associates" not in ws and "associated" not in ws and "bind" not in ws and "interact" not in ws):
-                        if w2.word in dict_no_interact[w1.word] and high_quality_verb == 0: 
+                        if w2.word in dict_no_interact[w1.word] and not high_quality_verb: 
                             if doc.docid.split(".pdf")[0] not in dict_gs_docids:
                                 print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"])
                                 log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"]))
@@ -899,7 +899,7 @@ def extract(doc):
                             print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
                             log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
                     elif w2.word in dict_no_interact and ("binds" not in ws and "interacts" not in ws and "interacted" not in ws and "bound" not in ws and "complex" not in ws and "associates" not in ws and "associated" not in ws and "bind" not in ws and "interact" not in ws):
-                        if w1.word in dict_no_interact[w2.word] and high_quality_verb == 0:
+                        if w1.word in dict_no_interact[w2.word] and not high_quality_verb:
                             if doc.docid.split(".pdf")[0] not in dict_gs_docids:
                                 print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"])
                                 log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"]))
@@ -911,7 +911,7 @@ def extract(doc):
                         else:
                             print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
                             log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
-                    elif appear_in_same_doc == True and ("binds" not in ws and "interacts" not in ws and "interacted" not in ws and "bound" not in ws and "complex" not in ws and "associates" not in ws and "associated" not in ws and "bind" not in ws and "interact" not in ws ) and high_quality_verb == 0:
+                    elif appear_in_same_doc == True and ("binds" not in ws and "interacts" not in ws and "interacted" not in ws and "bound" not in ws and "complex" not in ws and "associates" not in ws and "associated" not in ws and "bind" not in ws and "interact" not in ws ) and not high_quality_verb:
                         if doc.docid.split(".pdf")[0] not in dict_gs_docids:
                             print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"])
                             log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"]))
@@ -920,7 +920,7 @@ def extract(doc):
                         else:
                             print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
                             log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
-                    elif no_interact_phrase == True and high_quality_verb == 0: #("binds" in ws or "interacts" in ws or "bind" in ws or "interact" in ws) and "not" in ws:
+                    elif no_interact_phrase == True and not high_quality_verb: #("binds" in ws or "interacts" in ws or "bind" in ws or "interact" in ws) and "not" in ws:
                         if doc.docid.split(".pdf")[0] not in dict_gs_docids:
                             print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"])
                             log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"]))
@@ -938,7 +938,7 @@ def extract(doc):
                         else:
                             print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"])
                             log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "\\N", feature, sent_text, "\\N"]))
-                    elif random.random() < .08 and high_quality_verb == 0:
+                    elif random.random() < .08 and not high_quality_verb:
                         if doc.docid.split(".pdf")[0] not in dict_gs_docids:
                             print '\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"])
                             log('&&&&&'+'\t'.join([doc.docid, mid1, mid2, w1.word, w2.word, "false", feature, sent_text, "\\N"]))
