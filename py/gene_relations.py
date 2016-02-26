@@ -643,27 +643,22 @@ def extract(doc):
             elif w1.word not in dict_abbv and w1.word not in dict_english and w2.word not in dict_english and w2.word not in dict_abbv and w1.word not in dict_domains and w2.word not in dict_domains:
                 if w1.word in dict_interact and w2.word in dict_interact[w1.word] and "mutation" not in sent_text and "mutations" not in sent_text and "variant" not in sent_text and "variants" not in sent_text and "polymorphism" not in sent_text and "polymorphisms" not in sent_text:
 
-                    if not found_domain and flag_family == 0:
-                        if not_in_gold_std:
-                            output("true")
 
-                        output("\\N")
-                    else:
-                        output("\\N")
+                    if not_in_gold_std and not found_domain and flag_family == 0:
+                        output("true")
+
+                    output("\\N")
+
                 else:
                     if w1.word in dict_no_interact and no_interact_words(ws):
 
                         if not_in_gold_std and w2.word in dict_no_interact[w1.word] and not high_quality_verb: 
                             output("false")
 
-                        output("\\N")
-
                     elif w2.word in dict_no_interact and no_interact_words(ws):
 
                         if not_in_gold_std and w1.word in dict_no_interact[w2.word] and not high_quality_verb:
                             output("false")
-
-                        output("\\N")
 
                     elif appear_in_same_doc(w1.word, w2.word, dict_pmid_gene) and no_interact_words(ws) and not high_quality_verb:
                         # Negative Example: Mention appear in KB in same doc, but no interaction extracted in KB
@@ -671,24 +666,19 @@ def extract(doc):
                         if not_in_gold_std:
                             output("false")
 
-                        output("\\N")
                     elif no_interact_phrase(ws) and not high_quality_verb:
                         if not_in_gold_std:
                             output("false")
 
-                        output("\\N")
                     elif w1.ner == "Person" or w2.ner == "Person":
                         if not_in_gold_std:
                             output("false")
 
-                        output("\\N")
                     elif random.random() < .08 and not high_quality_verb:
                         if not_in_gold_std:
                             output("false")
 
-                        output("\\N")
-                    else:
-                        output("\\N")
+                    output("\\N")
             else:
                 output("\\N")
 
