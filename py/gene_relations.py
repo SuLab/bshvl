@@ -651,27 +651,25 @@ def extract(doc):
 
                 else:
                     # only a false example if not in the gold standard
-                    if not_in_gold_std:
+                    if not_in_gold_std and (w1.ner == "Person" or w2.ner == "Person" or not high_quality_verb):
+
                         if w1.word in dict_no_interact and no_interact_words(ws):
 
-                            if w2.word in dict_no_interact[w1.word] and not high_quality_verb: 
+                            if w2.word in dict_no_interact[w1.word]:
                                 output("false")
 
                         elif w2.word in dict_no_interact and no_interact_words(ws):
 
-                            if w1.word in dict_no_interact[w2.word] and not high_quality_verb:
+                            if w1.word in dict_no_interact[w2.word]:
                                 output("false")
 
-                        elif appear_in_same_doc(w1.word, w2.word, dict_pmid_gene) and no_interact_words(ws) and not high_quality_verb:
+                        elif appear_in_same_doc(w1.word, w2.word, dict_pmid_gene) and no_interact_words(ws):
                             # Negative Example: Mention appear in KB in same doc, but no interaction extracted in KB
                             output("false")
-                        elif no_interact_phrase(ws) and not high_quality_verb:
+                        elif no_interact_phrase(ws):
                             output("false")
 
-                        elif w1.ner == "Person" or w2.ner == "Person":
-                            output("false")
-
-                        elif random.random() < .08 and not high_quality_verb:
+                        elif random.random() < .08:
                             output("false")
 
                     output("\\N")
