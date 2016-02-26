@@ -640,7 +640,9 @@ def extract(doc):
                     output("false")
 
                 output("\\N")
-            elif w1.word not in dict_abbv and w1.word not in dict_english and w2.word not in dict_english and w2.word not in dict_abbv and w1.word not in dict_domains and w2.word not in dict_domains:
+
+            elif w1.word not in dict_abbv and w2.word not in dict_abbv and w1.word not in dict_english and w2.word not in dict_english and w1.word not in dict_domains and w2.word not in dict_domains:
+
                 if w1.word in dict_interact and w2.word in dict_interact[w1.word] and "mutation" not in sent_text and "mutations" not in sent_text and "variant" not in sent_text and "variants" not in sent_text and "polymorphism" not in sent_text and "polymorphisms" not in sent_text:
 
 
