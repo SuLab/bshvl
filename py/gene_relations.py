@@ -53,13 +53,13 @@ dict_geneid2official = {}
 dict_name2geneid = {}
 dict_snowball = {}
 dict_exclude_dist_sup = {}
-dict_domains = {}
 dict_y2h = {}
 dict_pmid2plos = {}
 
 dict_gs_docids = set()
 dict_abbv = set()
 dict_english = set()
+dict_domains = set()
 
 def load_dict():
     """Load relevant dictionaries for the gene-gene extractor."""
@@ -284,18 +284,20 @@ def load_dict():
                     if line[1].lower != "nitric oxide":
                         dict_drug_names[line[1].lower()] = line[1]
 
+    # load a list of medical acronyms
     for l in open(BASE_FOLDER + "/dicts/med_acronyms_pruned.txt"):
         word = l.rstrip().split("\t")[0]
         dict_abbv.add(word)
 
+    # load a list of english acronyms (some have accents)
     for l in open(BASE_FOLDER + "/dicts/words"):
         dict_english.add(l.rstrip().lower())
-#        dict_english[l.rstrip().lower()] = 1
 
+    # load a list of domain names
     with open(BASE_FOLDER + "/dicts/smart_domain_list.txt") as f:
         reader = csv.reader(f, delimiter='\t')
         for row in reader:
-            dict_domains[row[0].rstrip()] = 1
+            dict_domains.add(row[0].rstrip())
 
 
 def extract(doc):
