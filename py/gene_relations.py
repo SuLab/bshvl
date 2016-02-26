@@ -652,21 +652,19 @@ def extract(doc):
                         output("\\N")
                 else:
                     if w1.word in dict_no_interact and no_interact_words(ws):
-                        if w2.word in dict_no_interact[w1.word] and not high_quality_verb: 
-                            if not_in_gold_std:
-                                output("false")
 
-                            output("\\N")
-                        else:
-                            output("\\N")
+                        if not_in_gold_std and w2.word in dict_no_interact[w1.word] and not high_quality_verb: 
+                            output("false")
+
+                        output("\\N")
+
                     elif w2.word in dict_no_interact and no_interact_words(ws):
-                        if w1.word in dict_no_interact[w2.word] and not high_quality_verb:
-                            if not_in_gold_std:
-                                output("false")
 
-                            output("\\N")
-                        else:
-                            output("\\N")
+                        if not_in_gold_std and w1.word in dict_no_interact[w2.word] and not high_quality_verb:
+                            output("false")
+
+                        output("\\N")
+
                     elif appear_in_same_doc(w1.word, w2.word, dict_pmid_gene) and no_interact_words(ws) and not high_quality_verb:
                         # Negative Example: Mention appear in KB in same doc, but no interaction extracted in KB
 
