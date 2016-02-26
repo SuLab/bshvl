@@ -56,20 +56,26 @@ class Sentence(object):
 
         return path
 
-    def get_common_ancestor(self, path1, path2):
-        """Given two paths returned by get_path_till_root, find the least common ancestor."""
-        parent = None
-        for i in range(0, max(len(path1), len(path2))):
-            tovisit = 0 - i - 1
-            if i >= len(path1) or i >= len(path2):
-                break
 
-            if path1[tovisit] != path2[tovisit]:
-                break
+    def get_common_ancestor(self, pathA, pathB):
+        """This function finds the least common ancestor of two paths returned by
+        get_path_till_root.
 
-            parent = path1[tovisit]
+        This function by Mallory does __not__ have the off-by-one error that the
+        get_common_root() function in dependency_path.py has.
 
-        return parent
+        Therefore if possible use this version, and not that version.
+
+        Tong Shu Li
+        2016-02-25
+        """
+        pos = 1
+        while (pos <= len(pathA) and pos <= len(pathB)
+            and pathA[-pos] == pathB[-pos]):
+            pos += 1
+
+        return pathA[-pos+1] if pos > 1 else None
+
 
     def get_direct_dependency_path_between_words(self, idx1, idx2):
         """Given two word idx1 and idx2, where idx2 is the parent of idx1, return the
