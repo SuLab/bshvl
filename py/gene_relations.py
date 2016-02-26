@@ -53,13 +53,13 @@ dict_geneid2official = {}
 dict_name2geneid = {}
 dict_snowball = {}
 dict_exclude_dist_sup = {}
-dict_english = {}
 dict_domains = {}
 dict_y2h = {}
 dict_pmid2plos = {}
 
 dict_gs_docids = set()
 dict_abbv = set()
+dict_english = set()
 
 def load_dict():
     """Load relevant dictionaries for the gene-gene extractor."""
@@ -289,7 +289,8 @@ def load_dict():
         dict_abbv.add(word)
 
     for l in open(BASE_FOLDER + "/dicts/words"):
-        dict_english[l.rstrip().lower()] = 1
+        dict_english.add(l.rstrip().lower())
+#        dict_english[l.rstrip().lower()] = 1
 
     with open(BASE_FOLDER + "/dicts/smart_domain_list.txt") as f:
         reader = csv.reader(f, delimiter='\t')
