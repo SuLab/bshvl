@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
 # quick script to compare DeepDive logging output for gene_relations.py refactor
-# run from $DEEPDIVE_HOME/app/deepdive_genegene/ with `python3 test_gene_relations_log_output.py original_log_file.txt`
+# run from $DEEPDIVE_HOME/app/deepdive_genegene/ with 
+# `python3 test_gene_relations_log_output.py original_log_file.txt`
+# -or-
+# `python3 test_gene_relations_log_output.py original_log_file.txt new_log_file.txt`
 
 # sandip chatterjee, 2/23/16
 
@@ -13,15 +16,23 @@ import subprocess
 
 def main():
 
+    if len(sys.argv) < 2 or len(sys.argv) > 3:
+        print('incorrect number of arguments')
+        sys.exit(1)
+
     original_log_file = sys.argv[1]
-    deepdive_home_dir = os.getenv('DEEPDIVE_HOME')
-    new_log_file = '/'.join((deepdive_home_dir,
-                             'app',
-                             'bshvl',
-                             'run',
-                             'LATEST',
-                             'log.txt'
-                             ))
+
+    if len(sys.argv) == 3:
+        new_log_file = sys.argv[2]
+    else:
+        deepdive_home_dir = os.getenv('DEEPDIVE_HOME')
+        new_log_file = '/'.join((deepdive_home_dir,
+                                 'app',
+                                 'bshvl',
+                                 'run',
+                                 'LATEST',
+                                 'log.txt'
+                                 ))
 
     diff_filename = 'results.txt'
     with tempfile.NamedTemporaryFile() as t1, tempfile.NamedTemporaryFile() as t2, open(diff_filename, 'w') as f:
