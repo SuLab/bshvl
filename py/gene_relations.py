@@ -626,6 +626,9 @@ def extract(doc):
 
             ############## DISTANT SUPERVISION #################################
 
+            not_in_gold_std = doc.docid.rstrip(".pdf") not in dict_gs_docids
+
+
             sent_text = sent.__repr__()
             if sent_text.endswith("\\"):
                 sent_text = sent_text[:-1]
@@ -633,7 +636,7 @@ def extract(doc):
             if w1.word in dict_exclude_dist_sup and w2.word in dict_exclude_dist_sup[w1.word]:
                 output("\\N")
             elif words[0].word == "Abbreviations" and words[1].word == "used":
-                if doc.docid.split(".pdf")[0] not in dict_gs_docids:
+                if not_in_gold_std:
                     output("false")
 
                 output("\\N")
@@ -641,7 +644,7 @@ def extract(doc):
                 if w1.word in dict_interact and w2.word in dict_interact[w1.word] and "mutation" not in sent_text and "mutations" not in sent_text and "variant" not in sent_text and "variants" not in sent_text and "polymorphism" not in sent_text and "polymorphisms" not in sent_text:
 
                     if not found_domain and flag_family == 0:
-                        if doc.docid.split(".pdf")[0] not in dict_gs_docids:
+                        if not_in_gold_std:
                             output("true")
 
                         output("\\N")
@@ -650,7 +653,7 @@ def extract(doc):
                 else:
                     if w1.word in dict_no_interact and no_interact_words(ws):
                         if w2.word in dict_no_interact[w1.word] and not high_quality_verb: 
-                            if doc.docid.split(".pdf")[0] not in dict_gs_docids:
+                            if not_in_gold_std:
                                 output("false")
 
                             output("\\N")
@@ -658,7 +661,7 @@ def extract(doc):
                             output("\\N")
                     elif w2.word in dict_no_interact and no_interact_words(ws):
                         if w1.word in dict_no_interact[w2.word] and not high_quality_verb:
-                            if doc.docid.split(".pdf")[0] not in dict_gs_docids:
+                            if not_in_gold_std:
                                 output("false")
 
                             output("\\N")
@@ -667,22 +670,22 @@ def extract(doc):
                     elif appear_in_same_doc(w1.word, w2.word, dict_pmid_gene) and no_interact_words(ws) and not high_quality_verb:
                         # Negative Example: Mention appear in KB in same doc, but no interaction extracted in KB
 
-                        if doc.docid.split(".pdf")[0] not in dict_gs_docids:
+                        if not_in_gold_std:
                             output("false")
 
                         output("\\N")
                     elif no_interact_phrase(ws) and not high_quality_verb:
-                        if doc.docid.split(".pdf")[0] not in dict_gs_docids:
+                        if not_in_gold_std:
                             output("false")
 
                         output("\\N")
                     elif w1.ner == "Person" or w2.ner == "Person":
-                        if doc.docid.split(".pdf")[0] not in dict_gs_docids:
+                        if not_in_gold_std:
                             output("false")
 
                         output("\\N")
                     elif random.random() < .08 and not high_quality_verb:
-                        if doc.docid.split(".pdf")[0] not in dict_gs_docids:
+                        if not_in_gold_std:
                             output("false")
 
                         output("\\N")
