@@ -54,12 +54,12 @@ dict_name2geneid = {}
 dict_snowball = {}
 dict_exclude_dist_sup = {}
 dict_english = {}
-dict_abbv = {}
 dict_domains = {}
 dict_y2h = {}
 dict_pmid2plos = {}
 
 dict_gs_docids = set()
+dict_abbv = set()
 
 def load_dict():
     """Load relevant dictionaries for the gene-gene extractor."""
@@ -286,7 +286,7 @@ def load_dict():
 
     for l in open(BASE_FOLDER + "/dicts/med_acronyms_pruned.txt"):
         word = l.rstrip().split("\t")[0]
-        dict_abbv[word] = 1
+        dict_abbv.add(word)
 
     for l in open(BASE_FOLDER + "/dicts/words"):
         dict_english[l.rstrip().lower()] = 1
