@@ -106,3 +106,13 @@ def no_interact_phrase(ws):
         i == "not" and j in set(["bind", "interact", "interacts"])
         for i, j in slice(ws[:-1], 2)
     )
+
+def no_interact_words(ws):
+    KEYWORDS = set([
+        "bind", "binds", "bound",
+        "interact", "interacts", "interacted",
+        "associates", "associated",
+        "complex"
+    ])
+
+    return set(ws).isdisjoint(KEYWORDS)

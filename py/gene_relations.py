@@ -24,6 +24,7 @@ from util import is_plural_noun
 from util import is_gene_list
 from util import appear_in_same_doc
 from util import no_interact_phrase
+from util import no_interact_words
 
 from util import get_short_sentences
 from util import get_gene_pairs
@@ -647,7 +648,7 @@ def extract(doc):
                     else:
                         output("\\N")
                 else:
-                    if w1.word in dict_no_interact and ("binds" not in ws and "interacts" not in ws and "interacted" not in ws and "bound" not in ws and "complex" not in ws and "associates" not in ws and "associated" not in ws and "bind" not in ws and "interact" not in ws):
+                    if w1.word in dict_no_interact and no_interact_words(ws):
                         if w2.word in dict_no_interact[w1.word] and not high_quality_verb: 
                             if doc.docid.split(".pdf")[0] not in dict_gs_docids:
                                 output("false")
@@ -655,7 +656,7 @@ def extract(doc):
                             output("\\N")
                         else:
                             output("\\N")
-                    elif w2.word in dict_no_interact and ("binds" not in ws and "interacts" not in ws and "interacted" not in ws and "bound" not in ws and "complex" not in ws and "associates" not in ws and "associated" not in ws and "bind" not in ws and "interact" not in ws):
+                    elif w2.word in dict_no_interact and no_interact_words(ws):
                         if w1.word in dict_no_interact[w2.word] and not high_quality_verb:
                             if doc.docid.split(".pdf")[0] not in dict_gs_docids:
                                 output("false")
@@ -663,7 +664,7 @@ def extract(doc):
                             output("\\N")
                         else:
                             output("\\N")
-                    elif appear_in_same_doc(w1.word, w2.word, dict_pmid_gene) and ("binds" not in ws and "interacts" not in ws and "interacted" not in ws and "bound" not in ws and "complex" not in ws and "associates" not in ws and "associated" not in ws and "bind" not in ws and "interact" not in ws ) and not high_quality_verb:
+                    elif appear_in_same_doc(w1.word, w2.word, dict_pmid_gene) and no_interact_words(ws) and not high_quality_verb:
                         # Negative Example: Mention appear in KB in same doc, but no interaction extracted in KB
 
                         if doc.docid.split(".pdf")[0] not in dict_gs_docids:
