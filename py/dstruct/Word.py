@@ -1,40 +1,33 @@
-#! /usr/bin/env python
-
+#!/usr/bin/env python
 """
 Author: Emily K Mallory and Ce Zhang
 Date: 08/24/15
 Contact: emily.mallory@stanford.edu
 
-Word class
+Word class.
 """
 
 class Word(object):
-  
-  insent_id = None
-  word = None
-  pos = None
-  ner = None
-  lemma = None
-  dep_label = None
-  dep_par = None
-  sentid = None
-  box = None
+    def __init__(self, insent_id, text, pos, ner, lemma, dep_label, dep_par,
+        sentid, box):
 
-  def __init__(self, _insent_id, _word, _pos, _ner, _lemma, _dep_label, _dep_par, _sentid, _box):
-    self.insent_id = int(_insent_id) - 1
-    (self.word, self.pos, self.ner, self.lemma, self.dep_label) = (_word, _pos, _ner, _lemma, _dep_label)
-    self.lemma = self.lemma.replace('"', "''") # If do not do this, outputing an Array in the language will crash
-    self.lemma = self.lemma.replace('\\', "_") # If do not do this, outputing an Array in the language will crash
-    self.ner = self.ner
-    self.dep_par = int(_dep_par) - 1
-    self.sentid = int(_sentid.split('_')[-1]) - 1
-    #self.box = _box
+        self.insent_id = int(insent_id) - 1
 
-  def __repr__(self):
-    return self.word
+        self.word = text
+        self.pos = pos
+        self.ner = ner
+        self.lemma = lemma
+        self.dep_label = dep_label
 
-  def get_feature(self):
-    if self.ner == 'O':
-      return self.lemma
-    else:
-      return self.ner
+        self.dep_par = int(dep_par) - 1
+        self.sentid = int(sentid.split("_")[-1]) - 1
+
+        # If do not do this, outputing an Array in the language will crash
+        self.lemma = self.lemma.replace('"', "''")
+        self.lemma = self.lemma.replace('\\', "_")
+
+    def __repr__(self):
+        return self.word
+
+    def get_feature(self):
+        return self.lemma if self.ner == 'O' else self.ner
